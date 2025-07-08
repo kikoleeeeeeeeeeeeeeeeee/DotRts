@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a17cb2d497b4fd4596a37f1415cec70, type: 3}
+  m_Name: Zombie_Attack
+  m_EditorClassIdentifier: 
+  animationType: 7
+  meshArray:
+  - {fileID: 4300000, guid: d1a63c02cd012074292633a9b519979b, type: 2}
+  - {fileID: 4300000, guid: a09ae37528b2b8049be070a5d76d9804, type: 2}
+  - {fileID: 4300000, guid: 4d8f4f29cefba374c874fa296739eef4, type: 2}
+  - {fileID: 4300000, guid: 92884edda5cb85448964f808da34bee3, type: 2}
+  frameTimerMax: 0.5

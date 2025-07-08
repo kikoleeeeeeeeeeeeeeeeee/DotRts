@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a17cb2d497b4fd4596a37f1415cec70, type: 3}
+  m_Name: Scout_Walk
+  m_EditorClassIdentifier: 
+  animationType: 9
+  meshArray:
+  - {fileID: 4300000, guid: f20e42a4a7818e34a842d0d45c061f90, type: 2}
+  - {fileID: 4300000, guid: cd1ef6c83ff8f1846a8c999600e2e64f, type: 2}
+  - {fileID: 4300000, guid: ca98c337b769db540af5eab1a990e08c, type: 2}
+  - {fileID: 4300000, guid: dc5925d1f5971a44291efac1d56df69b, type: 2}
+  frameTimerMax: 0.2

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a17cb2d497b4fd4596a37f1415cec70, type: 3}
+  m_Name: Solider_Idle
+  m_EditorClassIdentifier: 
+  animationType: 1
+  meshArray:
+  - {fileID: 4300000, guid: d6f96b93231a25a4597eb0d57d21313c, type: 2}
+  - {fileID: 4300000, guid: 72bc188b3057ef04f8929fcc5543a426, type: 2}
+  frameTimerMax: 0.5
