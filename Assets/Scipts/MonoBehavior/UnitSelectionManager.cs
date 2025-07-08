@@ -197,11 +197,14 @@ public class UnitSelectionManager : MonoBehaviour
             if (!isAttackingSingleTarget)
             {
 
-                entityQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<Selected>().WithPresent<MoveOverride,TargetOverride>().Build(entityManager);
+                entityQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<Selected>()
+                    .WithPresent<MoveOverride,TargetOverride,FlowFieldPathRequest>().Build(entityManager);
 
                 NativeArray<Entity> entityArray = entityQuery.ToEntityArray(Allocator.Temp);
                 NativeArray<MoveOverride> moveOverrideArray = entityQuery.ToComponentDataArray<MoveOverride>(Allocator.Temp);
                 NativeArray<TargetOverride> targetOverrideArray = entityQuery.ToComponentDataArray<TargetOverride>(Allocator.Temp);
+                NativeArray<FlowFieldPathRequest> flowFieldPathRequestsArray = entityQuery.ToComponentDataArray<FlowFieldPathRequest>(Allocator.Temp);
+
                 NativeArray<float3> mousePositionArray = GenerateMovePositionArray(mouseWorldPosition, entityArray.Length);
 
                 for (int i = 0; i < moveOverrideArray.Length; i++)
@@ -214,9 +217,16 @@ public class UnitSelectionManager : MonoBehaviour
                     TargetOverride targetOverride = targetOverrideArray[i];
                     targetOverride.targetEntity = Entity.Null;
                     targetOverrideArray[i] = targetOverride;
+
+                    FlowFieldPathRequest   fieldFieldPathRequest = flowFieldPathRequestsArray[i];
+                    fieldFieldPathRequest.targetPosition = mousePositionArray[i];
+                    flowFieldPathRequestsArray[i] = fieldFieldPathRequest;
+                    entityManager.SetComponentEnabled<FlowFieldPathRequest>(entityArray[i], true);
                 }
                 entityQuery.CopyFromComponentDataArray(moveOverrideArray);
                 entityQuery.CopyFromComponentDataArray(targetOverrideArray);
+                entityQuery.CopyFromComponentDataArray(flowFieldPathRequestsArray);
+
             }
 
             //±øÓªÂß¼­

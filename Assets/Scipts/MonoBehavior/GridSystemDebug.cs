@@ -64,10 +64,19 @@ public class GridSystemDebug : MonoBehaviour
                 }
                 else
                 {
-                    gridSystemDebugsingle.SetSprite(arrowSprite);
-                    gridSystemDebugsingle.SetColor(Color.white);
-                    gridSystemDebugsingle.SetSpriteRotation(
-                        Quaternion.LookRotation(new float3(gridNode.vector.x, 0, gridNode.vector.y), Vector3.up));
+                    if(gridNode.cost == GridSystem.WALL_COST)
+                    {
+                        gridSystemDebugsingle.SetSprite(circleSprite);
+                        gridSystemDebugsingle.SetColor(Color.black);
+                    }
+                    else
+                    {
+                        gridSystemDebugsingle.SetSprite(arrowSprite);
+                        gridSystemDebugsingle.SetColor(Color.white);
+                        gridSystemDebugsingle.SetSpriteRotation(
+                            Quaternion.LookRotation(new float3(gridNode.vector.x, 0, gridNode.vector.y), Vector3.up));
+                    }
+                    
                 }
 
 

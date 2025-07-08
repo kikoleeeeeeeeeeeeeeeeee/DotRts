@@ -7,39 +7,68 @@ using UnityEngine;
 partial struct UnityMoveSystem : ISystem
 {
     public const float REACHED_TARGET_POSITION_DISTANCE_SQ = 2f;
+    
+    [BurstCompile]
+    public void OnCreate(ref SystemState state)
+    {
+        state.RequireForUpdate<GridSystem.GridSystemData>();
+    }
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+
+        GridSystem.GridSystemData gridSystemData =  SystemAPI.GetSingleton<GridSystem.GridSystemData>();
+
+        foreach((
+            RefRO<LocalTransform> localTransform,
+            RefRW<FlowFieldFollow> flowFieldFollow,
+            EnabledRefRW<FlowFieldFollow> flowFieldFollowEnableRW,
+            RefRW<UnityMover> unitMover)
+            in SystemAPI.Query<RefRO<LocalTransform>,
+            RefRW<FlowFieldFollow>,
+            EnabledRefRW<FlowFieldFollow>,
+            RefRW <UnityMover>>())
+        {
+           int2 gridPosition =   GridSystem.GetGridPosition(localTransform.ValueRO.Position, gridSystemData.gridNodeSize);
+
+            int index = GridSystem.CalculateIndex(gridPosition, gridSystemData.width);
+
+            Entity gridNodeEntity = gridSystemData.gridMap.gridEntityArray[index];
+             
+            
+            GridSystem.GridNode gridNode =  SystemAPI.GetComponent<GridSystem.GridNode>(gridNodeEntity);
+
+            float3 gridNodeMoveVecotr = GridSystem.GetWorldMovementVector(gridNode.vector);
+
+            if (GridSystem.IsWall(gridNode))
+            {
+                gridNodeMoveVecotr = flowFieldFollow.ValueRO.lastMoveVector;
+            }
+            else
+            {
+                flowFieldFollow.ValueRW.lastMoveVector = gridNodeMoveVecotr;
+            }
+
+            unitMover.ValueRW.targetPosition =
+                GridSystem.GetWorldCenterPosition(gridPosition.x, gridPosition.y, gridSystemData.gridNodeSize)
+                + gridNodeMoveVecotr 
+                * (gridSystemData.gridNodeSize * 2f);
+             
+            if(math.distance(localTransform.ValueRO.Position,flowFieldFollow.ValueRO.targetPosition)<gridSystemData.gridNodeSize)
+            {
+                unitMover.ValueRW.targetPosition = localTransform.ValueRO.Position;
+                flowFieldFollowEnableRW.ValueRW = false;     
+            }
+        }
+
+
         UnitMoverJob unitMoverJob = new UnitMoverJob
         {
             detalTime = SystemAPI.Time.DeltaTime
         };
         unitMoverJob.ScheduleParallel();
-        /*
-        foreach ((RefRW<LocalTransform> localTransform, 
-            RefRO < UnityMover > unityMover,
-            RefRW<PhysicsVelocity> physicsVelocity)
-            in SystemAPI.Query<
-                RefRW<LocalTransform>,
-                RefRO<UnityMover>,
-                RefRW<PhysicsVelocity>>()){
-       
-            float3 moveDirection = unityMover.ValueRO.targetPosition - localTransform.ValueRO.Position;
-            moveDirection = math.normalize(moveDirection);
-
-
-            localTransform.ValueRW.Rotation =
-                math.slerp(localTransform.ValueRO.Rotation, 
-                quaternion.LookRotation(moveDirection,math.up()),
-                SystemAPI.Time.DeltaTime*unityMover.ValueRO.rotationSpeed);
-
-            physicsVelocity.ValueRW.Linear = moveDirection * unityMover.ValueRO.moveSpeed;
-
-            physicsVelocity.ValueRW.Angular = float3.zero;
-
-        }
-        */
+        
     }
 }
 
