@@ -171,17 +171,21 @@ public class UnitSelectionManager : MonoBehaviour
 
             if (collisionWorld.CastRay(raycastInput, out Unity.Physics.RaycastHit raycastHit))
             {
+                Debug.Log($"Clicked Entity: {raycastHit.Entity}, HasFaction: {entityManager.HasComponent<Faction>(raycastHit.Entity)}");
                 if (entityManager.HasComponent<Faction>(raycastHit.Entity))
                 {
+
                     Faction faction = entityManager.GetComponentData<Faction>(raycastHit.Entity);
+                    Debug.Log($"Faction Type: {faction.factionType}");
                     if (faction.factionType == FactionType.Zombie)
                     {
                         isAttackingSingleTarget = true;
 
                         entityQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<Selected>().WithPresent<TargetOverride>().Build(entityManager);
 
-                        NativeArray<TargetOverride> targetOverrideArray = entityQuery.ToComponentDataArray<TargetOverride>(Allocator.Temp);
                         NativeArray<Entity> entityArray = entityQuery.ToEntityArray(Allocator.Temp);
+                        NativeArray<TargetOverride> targetOverrideArray = entityQuery.ToComponentDataArray<TargetOverride>(Allocator.Temp);
+                        
 
                         for (int i = 0; i < targetOverrideArray.Length; i++)
                         {
@@ -198,12 +202,12 @@ public class UnitSelectionManager : MonoBehaviour
             {
 
                 entityQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<Selected>()
-                    .WithPresent<MoveOverride,TargetOverride,FlowFieldPathRequest>().Build(entityManager);
+                    .WithPresent<MoveOverride,TargetOverride,TargetPositionPathQueued,FlowFieldPathRequest,FlowFieldFollow>().Build(entityManager);
 
                 NativeArray<Entity> entityArray = entityQuery.ToEntityArray(Allocator.Temp);
                 NativeArray<MoveOverride> moveOverrideArray = entityQuery.ToComponentDataArray<MoveOverride>(Allocator.Temp);
                 NativeArray<TargetOverride> targetOverrideArray = entityQuery.ToComponentDataArray<TargetOverride>(Allocator.Temp);
-                NativeArray<FlowFieldPathRequest> flowFieldPathRequestsArray = entityQuery.ToComponentDataArray<FlowFieldPathRequest>(Allocator.Temp);
+                NativeArray<TargetPositionPathQueued> targetPositionPathQueuedArray = entityQuery.ToComponentDataArray<TargetPositionPathQueued>(Allocator.Temp);
 
                 NativeArray<float3> mousePositionArray = GenerateMovePositionArray(mouseWorldPosition, entityArray.Length);
 
@@ -218,14 +222,19 @@ public class UnitSelectionManager : MonoBehaviour
                     targetOverride.targetEntity = Entity.Null;
                     targetOverrideArray[i] = targetOverride;
 
-                    FlowFieldPathRequest   fieldFieldPathRequest = flowFieldPathRequestsArray[i];
-                    fieldFieldPathRequest.targetPosition = mousePositionArray[i];
-                    flowFieldPathRequestsArray[i] = fieldFieldPathRequest;
-                    entityManager.SetComponentEnabled<FlowFieldPathRequest>(entityArray[i], true);
+                    TargetPositionPathQueued targetPositionPathQueued = targetPositionPathQueuedArray[i];
+                    targetPositionPathQueued.targetPosition = mousePositionArray[i];
+                    targetPositionPathQueuedArray[i] = targetPositionPathQueued;
+
+
+                    entityManager.SetComponentEnabled<TargetPositionPathQueued>(entityArray[i], true);
+                    entityManager.SetComponentEnabled<FlowFieldPathRequest>(entityArray[i], false);
+                    entityManager.SetComponentEnabled<FlowFieldFollow>(entityArray[i], false);
+
                 }
                 entityQuery.CopyFromComponentDataArray(moveOverrideArray);
                 entityQuery.CopyFromComponentDataArray(targetOverrideArray);
-                entityQuery.CopyFromComponentDataArray(flowFieldPathRequestsArray);
+                entityQuery.CopyFromComponentDataArray(targetPositionPathQueuedArray);
 
             }
 

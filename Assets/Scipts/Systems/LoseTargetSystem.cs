@@ -10,40 +10,36 @@ partial struct LoseTargetSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        var localTransformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true);
+        foreach ((
+           RefRO<LocalTransform> localTransform,
+           RefRW<Target> target,
+           RefRO<LoseTarget> loseTarget,
+           RefRO<TargetOverride> targetOverride)
+           in SystemAPI.Query<
+               RefRO<LocalTransform>,
+               RefRW<Target>,
+               RefRO<LoseTarget>,
+               RefRO<TargetOverride>>())
+        {
 
-        foreach (
-            (RefRO<LocalTransform> localtransform,
-            RefRW<Target> target,
-            RefRO<LoseTarget> loseTarget,
-            RefRO<TargetOverride> targetOverride)
-        in SystemAPI.Query<
-            RefRO<LocalTransform>, 
-            RefRW<Target>,
-            RefRO<LoseTarget>,
-            RefRO<TargetOverride>>()){
-
-            if(target.ValueRO.targetEntity == Entity.Null)
-            {
-                continue;
-            }
-            
-            if(targetOverride.ValueRO.targetEntity != Entity.Null)
+            if (target.ValueRO.targetEntity == Entity.Null)
             {
                 continue;
             }
 
-            if (!localTransformLookup.HasComponent(targetOverride.ValueRO.targetEntity))
-                continue;
-
-            LocalTransform targetlocaltransform =  SystemAPI.GetComponent<LocalTransform>(target.ValueRO.targetEntity);
-            float targetDistance = math.distance(localtransform.ValueRO.Position, targetlocaltransform.Position);
-            if(targetDistance> loseTarget.ValueRO.loseTargetDistance)
+            if (targetOverride.ValueRO.targetEntity != Entity.Null)
             {
+                continue;
+            }
+
+            LocalTransform targetLocalTransform = SystemAPI.GetComponent<LocalTransform>(target.ValueRO.targetEntity);
+            float targetDistance = math.distance(localTransform.ValueRO.Position, targetLocalTransform.Position);
+            if (targetDistance > loseTarget.ValueRO.loseTargetDistance)
+            {
+                // Target is too far, reset it
                 target.ValueRW.targetEntity = Entity.Null;
             }
-
         }
     }
-
 }
+

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7470188035372187169}
   - component: {fileID: 6814826896892384613}
   - component: {fileID: 8617801185144120864}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: PathFindingWall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -301,8 +301,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.8, y: 6.1771297, z: 4.8}
-  m_Center: {x: 0, y: 2.5885649, z: 0}
+  m_Size: {x: 5.477886, y: 7.8289413, z: 6.1121616}
+  m_Center: {x: 0.026090622, y: 3.4144707, z: 0.0563612}
 --- !u!114 &7662562946184388695
 MonoBehaviour:
   m_ObjectHideFlags: 0

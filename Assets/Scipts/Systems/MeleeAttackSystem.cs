@@ -4,6 +4,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
+using UnityEngine.UIElements;
 
 partial struct MeleeAttackSystem : ISystem
 {
@@ -22,12 +23,14 @@ partial struct MeleeAttackSystem : ISystem
         foreach ((RefRO<LocalTransform> localTransform,
                   RefRW<MeleeAttack> meleeAttack,
                   RefRO<Target> target,
-                  RefRW<UnityMover> unitymover)
+                  RefRW<TargetPositionPathQueued> targetPositionPathQueued,
+            EnabledRefRW<TargetPositionPathQueued> targetPositionPathQueuedEnable)
             in SystemAPI.Query<
                 RefRO<LocalTransform>,
                 RefRW<MeleeAttack>,
                 RefRO<Target>,
-                RefRW<UnityMover>>().WithDisabled<MoveOverride>())
+                RefRW<TargetPositionPathQueued>,
+            EnabledRefRW<TargetPositionPathQueued>>().WithDisabled<MoveOverride>().WithPresent<TargetPositionPathQueued>())
         {
             Entity targetEntity = target.ValueRO.targetEntity;
             if (targetEntity == Entity.Null || !localTransformLookup.HasComponent(targetEntity))
@@ -70,11 +73,13 @@ partial struct MeleeAttackSystem : ISystem
 
             if (!isCloseEnoughToAttack && !isTouchingTarget)
             {
-                unitymover.ValueRW.targetPosition = targetLocalTransform.Position;
+                targetPositionPathQueued.ValueRW.targetPosition = targetLocalTransform.Position;
+                targetPositionPathQueuedEnable.ValueRW = true;
             }
             else
             {
-                unitymover.ValueRW.targetPosition = localTransform.ValueRO.Position;
+                targetPositionPathQueued.ValueRW.targetPosition = localTransform.ValueRO.Position;
+                targetPositionPathQueuedEnable.ValueRW = true;
 
                 meleeAttack.ValueRW.timer -= SystemAPI.Time.DeltaTime;
                 if (meleeAttack.ValueRW.timer > 0)

@@ -15,21 +15,23 @@ partial struct EnemyAttackHqSystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
         Entity hqentity = SystemAPI.GetSingletonEntity<BuildingHQ>();
-        float3 hqPosition = SystemAPI.GetComponent<LocalTransform>(hqentity).Position; 
+        float3 hqPosition = SystemAPI.GetComponent<LocalTransform>(hqentity).Position;
 
-        foreach((RefRO<EnemyAttackHQ> enemyAttackHQ,
-            RefRW<UnityMover> unitmover,
-            RefRO<Target> target)
+        foreach ((RefRO<EnemyAttackHQ> enemyAttackHQ,
+            RefRW<TargetPositionPathQueued> targetPositionPathQueued,
+            EnabledRefRW < TargetPositionPathQueued > targetPositionPathQueuedEnable,
+            RefRO <Target> target)
         in SystemAPI.Query<RefRO<EnemyAttackHQ>,
-            RefRW<UnityMover>,
-            RefRO<Target>>().WithDisabled<MoveOverride>())
+            RefRW<TargetPositionPathQueued>,
+            EnabledRefRW<TargetPositionPathQueued>,
+            RefRO<Target>>().WithDisabled<MoveOverride>().WithPresent<TargetPositionPathQueued>())
         {
              if(target.ValueRO.targetEntity != Entity.Null)
             {
                 continue;
             }
-
-            unitmover.ValueRW.targetPosition = hqPosition;
+            targetPositionPathQueued.ValueRW.targetPosition = hqPosition;
+            targetPositionPathQueuedEnable.ValueRW = true;
         }
     }
 

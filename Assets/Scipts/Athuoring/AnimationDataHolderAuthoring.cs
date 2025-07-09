@@ -14,8 +14,6 @@ public class AnimationDataHolderAuthoring : MonoBehaviour
 
     public class Baker : Baker<AnimationDataHolderAuthoring>
     {
-
-
         public override void Bake(AnimationDataHolderAuthoring authoring)
         {
             Entity entity = GetEntity(TransformUsageFlags.Dynamic);

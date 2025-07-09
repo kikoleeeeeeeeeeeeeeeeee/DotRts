@@ -14,26 +14,33 @@ public partial struct GridSystem : ISystem
 {
 
     public const int WALL_COST = byte.MaxValue;
+    public const int HEAVY_COST = 50;
+
+    public const int FLOW_FIELD_MAP_COUNT = 50;
     public struct GridSystemData : IComponentData
     {
         public int width;
         public int height;
         public float gridNodeSize;
-        public GridMap gridMap;
+        public NativeArray<GridMap> gridMapArray;
+        public int nextGridIndex;
+        public NativeArray<byte> costMap;
     }
 
 
     public struct GridMap
     {
         public NativeArray<Entity> gridEntityArray;
+        public int2 targetGridPosition;
+        public bool isVaild;
     }
     public struct GridNode : IComponentData
     {
         public int index;
         public int x;
         public int y;
-        public byte cost;
-        public byte bestCost;
+        public int cost;
+        public int bestCost;
         public float2 vector;
     }
 
@@ -49,27 +56,34 @@ public partial struct GridSystem : ISystem
         Entity gridNodeEntityPrefab = state.EntityManager.CreateEntity();
         state.EntityManager.AddComponent<GridNode>(gridNodeEntityPrefab);
 
-        GridMap gridMap = new GridMap();
-        gridMap.gridEntityArray = new NativeArray<Entity>(totalCount, Allocator.Persistent);
+        NativeArray<GridMap> gridMapArray = new NativeArray<GridMap>(FLOW_FIELD_MAP_COUNT, Allocator.Persistent);
 
-        state.EntityManager.Instantiate(gridNodeEntityPrefab, gridMap.gridEntityArray);
-
-        for (int x = 0; x < width; x++)
+        for (int i = 0; i < FLOW_FIELD_MAP_COUNT; i++)
         {
-            for (int y = 0; y < height; y++)
+            GridMap gridMap = new GridMap();
+            gridMap.isVaild = false;
+            gridMap.gridEntityArray = new NativeArray<Entity>(totalCount, Allocator.Persistent);
+
+            state.EntityManager.Instantiate(gridNodeEntityPrefab, gridMap.gridEntityArray);
+
+            for (int x = 0; x < width; x++)
             {
-                int index = CalculateIndex(x, y, width);
-                GridNode gridNode = new GridNode
+                for (int y = 0; y < height; y++)
                 {
-                    index = index,
-                    x = x,
-                    y = y,
-                };
+                    int index = CalculateIndex(x, y, width);
+                    GridNode gridNode = new GridNode
+                    {
+                        index = index,
+                        x = x,
+                        y = y,
+                    };
 #if GRID_DEBUG
-                state.EntityManager.SetName(gridMap.gridEntityArray[index], "GridNode_" + x + "_" + y);
+                    state.EntityManager.SetName(gridMap.gridEntityArray[index], "GridNode_" + x + "_" + y);
 #endif
-                SystemAPI.SetComponent(gridMap.gridEntityArray[index], gridNode);
+                    SystemAPI.SetComponent(gridMap.gridEntityArray[index], gridNode);
+                }
             }
+            gridMapArray[i] = gridMap;
         }
 
         state.EntityManager.AddComponent<GridSystemData>(state.SystemHandle);
@@ -79,7 +93,8 @@ public partial struct GridSystem : ISystem
             width = width,
             height = height,
             gridNodeSize = griNodeSize,
-            gridMap = gridMap
+            gridMapArray = gridMapArray,
+            costMap = new NativeArray<byte>(totalCount, Allocator.Persistent),
         });
     }
 
@@ -104,10 +119,33 @@ public partial struct GridSystem : ISystem
 
             flowFieldPathRequestEnableRw.ValueRW = false;
 
+            bool alreadyCalculatePath = false;
+
+            for (int i = 0; i < FLOW_FIELD_MAP_COUNT; i++) {
+                if (gridSystemData.gridMapArray[i].isVaild && gridSystemData.gridMapArray[i].targetGridPosition.Equals(targetGridPosition)){
+                    flowFieldFollow.ValueRW.gridIndex = i;
+                    flowFieldFollow.ValueRW.targetPosition = flowFieldPathRequest.ValueRO.targetPosition;
+                    flowFieldFollowEnableRw.ValueRW = true;
+
+                    alreadyCalculatePath = true;
+                    break;
+                }
+            }
+
+            if (alreadyCalculatePath) {
+                continue;
+            }
+
+            int gridIndex = gridSystemData.nextGridIndex;
+            gridSystemData.nextGridIndex = (gridSystemData.nextGridIndex+1)%FLOW_FIELD_MAP_COUNT;
+
+
+            Debug.Log("¼ÆËãÂ·¾¶" + targetGridPosition + "  " + gridIndex);
+            flowFieldFollow.ValueRW.gridIndex = gridIndex;
             flowFieldFollow.ValueRW.targetPosition = flowFieldPathRequest.ValueRO.targetPosition;
             flowFieldFollowEnableRw.ValueRW = true;
 
-        NativeArray<RefRW<GridNode>> gridNodeNativeArray =
+            NativeArray<RefRW<GridNode>> gridNodeNativeArray =
             new NativeArray<RefRW<GridNode>>(gridSystemData.width * gridSystemData.height, Allocator.Temp);
 
 
@@ -116,7 +154,7 @@ public partial struct GridSystem : ISystem
                 for (int y = 0; y < gridSystemData.height; y++)
                 {
                     int index = CalculateIndex(x, y, gridSystemData.width);
-                    Entity gridNodeEntity = gridSystemData.gridMap.gridEntityArray[index];
+                    Entity gridNodeEntity = gridSystemData.gridMapArray[gridIndex].gridEntityArray[index];
 
                     RefRW<GridNode> gridNode = SystemAPI.GetComponentRW<GridNode>(gridNodeEntity);
 
@@ -132,7 +170,7 @@ public partial struct GridSystem : ISystem
                     else
                     {
                         gridNode.ValueRW.cost = 1;
-                        gridNode.ValueRW.bestCost = byte.MaxValue;
+                        gridNode.ValueRW.bestCost =int.MaxValue;
                     }
                 }
             }
@@ -152,12 +190,30 @@ public partial struct GridSystem : ISystem
                          new CollisionFilter
                          {
                              BelongsTo = ~0u,
-                             CollidesWith = 1u << GameAssets.PATHFINDGIN_WALLS,
+                             CollidesWith = 1u << GameAssets.PATHFINDING_WALL,
                              GroupIndex = 0,
                          })) {
                         int index = CalculateIndex(x, y, gridSystemData.width);
                         gridNodeNativeArray[index].ValueRW.cost = WALL_COST;
+                        gridSystemData.costMap[index] = WALL_COST; 
                     }
+                    if (collisionWorld.OverlapSphere(
+                        GetWorldCenterPosition(x, y, gridSystemData.gridNodeSize),
+                         gridSystemData.gridNodeSize * .5f,
+                         ref distanceHitsList,
+                         new CollisionFilter
+                         {
+                             BelongsTo = ~0u,
+                             CollidesWith = 1u << GameAssets.PATHFINDING_HEAVY,
+                             GroupIndex = 0,
+                         }))
+                    {
+                        int index = CalculateIndex(x, y, gridSystemData.width);
+                        gridNodeNativeArray[index].ValueRW.cost = HEAVY_COST;
+                        gridSystemData.costMap[index] = HEAVY_COST;
+
+                    }
+
                 }
             }
             distanceHitsList.Dispose();
@@ -191,7 +247,7 @@ public partial struct GridSystem : ISystem
                     {
                         continue;
                     }
-                    byte newBestCost = (byte)(currenGridNode.ValueRO.bestCost + neighbourGridNode.ValueRO.cost);
+                    int newBestCost = (currenGridNode.ValueRO.bestCost + neighbourGridNode.ValueRO.cost);
 
                     if (newBestCost < neighbourGridNode.ValueRO.bestCost)
                     {
@@ -208,6 +264,12 @@ public partial struct GridSystem : ISystem
             }
             gridNodeOpenQueue.Dispose();
             gridNodeNativeArray.Dispose();
+
+            GridMap gridMap = gridSystemData.gridMapArray[gridIndex];
+            gridMap.targetGridPosition = targetGridPosition;
+            gridMap.isVaild = true;
+            gridSystemData.gridMapArray[gridIndex] = gridMap;
+            SystemAPI.SetComponent(state.SystemHandle, gridSystemData);
         }
 
         if (Input.GetMouseButtonDown(0))
@@ -216,10 +278,10 @@ public partial struct GridSystem : ISystem
 
             int2 mouseGridPosition = GetGridPosition(mouseWorldPosition, gridSystemData.gridNodeSize);
             if (IsValidGridPosition(mouseGridPosition, gridSystemData.width, gridSystemData.height))
-            {
+            {/*
                 int index = CalculateIndex(mouseGridPosition.x, mouseGridPosition.y, gridSystemData.width);
                 Entity gridNodeEntity = gridSystemData.gridMap.gridEntityArray[index];
-                RefRW<GridNode> gridNode = SystemAPI.GetComponentRW<GridNode>(gridNodeEntity);
+                RefRW<GridNode> gridNode = SystemAPI.GetComponentRW<GridNode>(gridNodeEntity);*/
             }
 
         }
@@ -234,7 +296,14 @@ public partial struct GridSystem : ISystem
     public void OnDestroy(ref SystemState state)
     {
         RefRW<GridSystemData> gridSystemData = SystemAPI.GetComponentRW<GridSystemData>(state.SystemHandle);
-        gridSystemData.ValueRW.gridMap.gridEntityArray.Dispose();
+        for (int i = 0; i < FLOW_FIELD_MAP_COUNT; i++)
+        {
+            gridSystemData.ValueRW.gridMapArray[i].gridEntityArray.Dispose();
+
+        }
+        gridSystemData.ValueRW.gridMapArray.Dispose();
+        gridSystemData.ValueRW.costMap.Dispose();
+
     }
 
     public static NativeList<RefRW<GridNode>> GetNeighbourGridNodeList(RefRW<GridNode> currentGridNode,
@@ -357,4 +426,15 @@ public partial struct GridSystem : ISystem
     {
         return gridnode.cost == WALL_COST;
     }
+    public static bool IsWall(int2 gridPosition,GridSystemData gridSystemData)
+    {
+        return gridSystemData.costMap[CalculateIndex(gridPosition, gridSystemData.width)] == WALL_COST;
+    }
+
+    public static bool IsValidWalkableGridPosition(float3 worldPostion,GridSystemData gridSystemData)
+    {
+        int2 gridPosition = GetGridPosition(worldPostion, gridSystemData.gridNodeSize);
+        return IsValidGridPosition(gridPosition, gridSystemData.width, gridSystemData.height)&&
+            !IsWall(gridPosition,gridSystemData);
+    } 
 }

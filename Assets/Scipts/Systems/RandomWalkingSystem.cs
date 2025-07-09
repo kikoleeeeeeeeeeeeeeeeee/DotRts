@@ -11,13 +11,15 @@ partial struct RandomWalkingSystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
         foreach ((
-              RefRW<RandomWalking> randomWalking,
-              RefRW<UnityMover> unitMover,
-              RefRO<LocalTransform> localTransform)
+            RefRW<RandomWalking> randomWalking,
+            RefRW<TargetPositionPathQueued> targetPositionPathQueued,
+            EnabledRefRW<TargetPositionPathQueued> targetPositionPathQueuedEnable,
+            RefRO<LocalTransform> localTransform)
               in SystemAPI.Query
-              <RefRW<RandomWalking>,
-              RefRW<UnityMover>,
-              RefRO<LocalTransform>>())
+            <RefRW<RandomWalking>,
+            RefRW<TargetPositionPathQueued>,
+            EnabledRefRW<TargetPositionPathQueued>,
+            RefRO<LocalTransform>>().WithPresent<TargetPositionPathQueued>())
         {
 
             if (math.distancesq(localTransform.ValueRO.Position, randomWalking.ValueRO.targetPosition) < UnityMoveSystem.REACHED_TARGET_POSITION_DISTANCE_SQ)
@@ -26,20 +28,20 @@ partial struct RandomWalkingSystem : ISystem
                 float3 randomDirection = new float3(random.NextFloat(-1f, +1f), 0, random.NextFloat(-1f, +1f));
                 randomDirection = math.normalize(randomDirection);
 
-                randomWalking.ValueRW.targetPosition = 
+                randomWalking.ValueRW.targetPosition =
                     randomWalking.ValueRO.originPosition +
-                    randomDirection*random.NextFloat(randomWalking.ValueRO.distanceMin,randomWalking.ValueRO.distanceMax);
+                    randomDirection * random.NextFloat(randomWalking.ValueRO.distanceMin, randomWalking.ValueRO.distanceMax);
 
                 randomWalking.ValueRW.random = random;
 
             }
             else
             {
-                unitMover.ValueRW.targetPosition = randomWalking.ValueRO.targetPosition;
+                targetPositionPathQueued.ValueRW.targetPosition = randomWalking.ValueRO.targetPosition;
+                targetPositionPathQueuedEnable.ValueRW = true;
             }
+
         }
-
     }
-
 
 }

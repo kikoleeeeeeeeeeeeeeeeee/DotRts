@@ -19,5 +19,6 @@ public class FlowFieldFollowAuthoring : MonoBehaviour
 public struct FlowFieldFollow : IComponentData,IEnableableComponent{
     public float3 targetPosition;
     public float3 lastMoveVector;
+    public int gridIndex;
 }
  
