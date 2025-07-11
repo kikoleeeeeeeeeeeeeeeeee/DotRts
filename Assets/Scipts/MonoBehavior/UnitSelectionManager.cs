@@ -171,12 +171,10 @@ public class UnitSelectionManager : MonoBehaviour
 
             if (collisionWorld.CastRay(raycastInput, out Unity.Physics.RaycastHit raycastHit))
             {
-                Debug.Log($"Clicked Entity: {raycastHit.Entity}, HasFaction: {entityManager.HasComponent<Faction>(raycastHit.Entity)}");
                 if (entityManager.HasComponent<Faction>(raycastHit.Entity))
                 {
 
                     Faction faction = entityManager.GetComponentData<Faction>(raycastHit.Entity);
-                    Debug.Log($"Faction Type: {faction.factionType}");
                     if (faction.factionType == FactionType.Zombie)
                     {
                         isAttackingSingleTarget = true;

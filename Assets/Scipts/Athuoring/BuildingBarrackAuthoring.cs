@@ -27,7 +27,7 @@ public struct BuildingBarracksUnitEnqueue : IComponentData, IEnableableComponent
 {
     public UnitTypeSo.UnitType unitType;
 }
-
+ 
 
 
 public struct BuildingBarracks : IComponentData

@@ -54,7 +54,12 @@ partial struct MeleeAttackSystem : ISystem
                 {
                     Start = localTransform.ValueRO.Position,
                     End = localTransform.ValueRO.Position + dirToTarget * (meleeAttack.ValueRO.colliderSize + distanceExtraToTestRaycast),
-                    Filter = CollisionFilter.Default
+                    Filter = new CollisionFilter
+                    {
+                        BelongsTo = ~0u,
+                        CollidesWith = 1u<<GameAssets.UNITS_LAYER|1u<<GameAssets.BUILDINGS_LAYER,
+                        GroupIndex = 0,
+                    }
                 };
 
                 raycastHitList.Clear();
@@ -62,7 +67,7 @@ partial struct MeleeAttackSystem : ISystem
                 {
                     foreach (RaycastHit raycastHit in raycastHitList)
                     {
-                        if (raycastHit.Entity == targetEntity)
+                        if (raycastHit.Entity == target.ValueRO.targetEntity)
                         {
                             isTouchingTarget = true;
                             break;

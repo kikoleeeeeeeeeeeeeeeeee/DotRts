@@ -22,7 +22,6 @@ partial struct SetupUnitMoverDefaultPositionSystem : ISystem
             unityMover.ValueRW.targetPosition = localtransofm.ValueRO.Position;
             entityCommandBuffer.RemoveComponent<SetupUnitMoverDefaultPosition>(entity);
 
-            UnityEngine.Debug.Log("set");
 
         }
     }
