@@ -19,6 +19,13 @@ public class BuildingBarrackUi : MonoBehaviour
     {
         soldierButton.onClick.AddListener(() =>
         {
+            UnitTypeSo unitTypeSo = GameAssets.Instance.unitTypeListSO.GetUnitTypeSO(UnitTypeSo.UnitType.Soldier);
+            if (!ResrouceManager.Instance.CanSpendResourceAmount(unitTypeSo.spawnCostResourceAmountArray))
+            {
+                return;
+            }
+            ResrouceManager.Instance.SpendResourceAmount(unitTypeSo.spawnCostResourceAmountArray);
+
             entityManager.SetComponentData(buildingBarracksEntity, new BuildingBarracksUnitEnqueue
             {
                 unitType = UnitTypeSo.UnitType.Soldier
@@ -29,6 +36,13 @@ public class BuildingBarrackUi : MonoBehaviour
 
         scoutButton.onClick.AddListener(() =>
         {
+            UnitTypeSo unitTypeSo = GameAssets.Instance.unitTypeListSO.GetUnitTypeSO(UnitTypeSo.UnitType.Scout);
+            if (!ResrouceManager.Instance.CanSpendResourceAmount(unitTypeSo.spawnCostResourceAmountArray))
+            {
+                return;
+            }
+            ResrouceManager.Instance.SpendResourceAmount(unitTypeSo.spawnCostResourceAmountArray);
+
             entityManager.SetComponentData(buildingBarracksEntity, new BuildingBarracksUnitEnqueue
             {
                 unitType = UnitTypeSo.UnitType.Scout

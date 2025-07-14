@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3fe1c6edbd65df4a99c9b13eba9403c, type: 3}
+  m_Script: {fileID: 11500000, guid: 197abffcc4d63c8408eb214efb98a180, type: 3}
   m_Name: Gold
   m_EditorClassIdentifier: 
-  type: 2
+  resourcetype: 2
   sprite: {fileID: 21300000, guid: 6d6767b5d644420409d8688842bf3ba0, type: 3}

@@ -6,6 +6,6 @@ using System.Collections.Generic;
 [CreateAssetMenu()]
 public class ResrouceTypeListSo : ScriptableObject
 {
-    public List<ResrouceTypeSo> resrouceTySoList;
+    public List<ResourceTypeSo> resrouceTySoList;
 
 }

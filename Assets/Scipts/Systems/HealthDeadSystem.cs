@@ -23,7 +23,15 @@ partial struct HealthDeadSystem : ISystem
             {
                 health.ValueRW.onDead = true;
                 entityCommandBuffer.DestroyEntity(entity);
+
+                if (SystemAPI.HasComponent<BuildignConstruction>(entity))
+                {
+                    BuildignConstruction buildignConstruction = SystemAPI.GetComponent<BuildignConstruction>(entity);
+
+                    entityCommandBuffer.DestroyEntity(buildignConstruction.visualEntity);
+                }
             }
         }
+
     }
 }

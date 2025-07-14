@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ResourceTypeSoHolderAuthoring : MonoBehaviour
 {
-    public ResrouceTypeSo.ResourceType resourceType;
+    public ResourceTypeSo.ResourceType resourceType;
 
     public class Baker : Baker<ResourceTypeSoHolderAuthoring>
     {
@@ -20,5 +20,5 @@ public class ResourceTypeSoHolderAuthoring : MonoBehaviour
 
 public struct ResourceTypeSoHolder : IComponentData
 {
-    public ResrouceTypeSo.ResourceType resourceType;
+    public ResourceTypeSo.ResourceType resourceType;
 }

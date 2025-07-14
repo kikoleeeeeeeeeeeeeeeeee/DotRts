@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resrouceTySoList:
   - {fileID: 11400000, guid: 8f03750c5de901f4e96b070656fa6a90, type: 2}
-  - {fileID: 11400000, guid: bb2f05bcba425e647bab748c5ae2a864, type: 2}
-  - {fileID: 11400000, guid: d76fe910e533f244fb7e4f71de8c3b15, type: 2}
+  - {fileID: 11400000, guid: ad0d9f68b9a6cdc4f9ca57a05c17a79f, type: 2}
+  - {fileID: 11400000, guid: b36aeb2c7a5677741b09621eb4e59fee, type: 2}

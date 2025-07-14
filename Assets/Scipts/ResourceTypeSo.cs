@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu()]
-public class ResrouceTypeSo : ScriptableObject{
+public class ResourceTypeSo : ScriptableObject{
 
     public enum ResourceType
     {
@@ -10,7 +10,7 @@ public class ResrouceTypeSo : ScriptableObject{
         Gold,
         Oil,
     }
-    public ResourceType type;
+    public ResourceType resourcetype;
     public Sprite sprite;
     
 }

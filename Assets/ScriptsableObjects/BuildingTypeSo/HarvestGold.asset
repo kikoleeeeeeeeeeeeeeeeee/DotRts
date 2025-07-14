@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b85c61067d398964d87fbd327afc0134, type: 3}
+  m_Name: HarvestGold
+  m_EditorClassIdentifier: 
+  buildingConstructionTimerMax: 5
+  constructionYOffset: -5.17
+  buildingType: 5
+  prefab: {fileID: 8185793723603026593, guid: f1190ab3c299c944889ed2f41fb9de7d, type: 3}
+  buildingDistanceMin: 10
+  showInBuildingPlacementManagerUi: 1
+  sprite: {fileID: 21300000, guid: 8fe1774abab81cf42b56f4366489453b, type: 3}
+  visualPrefab: {fileID: 6489063184693368259, guid: d92e1b4fc516b61468081516cc5c14f1, type: 3}
+  buildCostResourceAmountArray:
+  - resourceType: 1
+    amount: 20
+  harvestableResourceType: 2
+  harvestDistance: 8
