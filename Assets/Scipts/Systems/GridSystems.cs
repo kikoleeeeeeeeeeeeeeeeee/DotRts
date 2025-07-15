@@ -55,8 +55,8 @@ public partial struct GridSystem : ISystem
 #endif
     public void OnCreate(ref SystemState state)
     {
-        int width = 20;
-        int height = 20;
+        int width = 40;
+        int height = 40;
         float griNodeSize = 5f;
         int totalCount = width * height;
         Entity gridNodeEntityPrefab = state.EntityManager.CreateEntity();

@@ -13,6 +13,7 @@ public class UnitTypeSo : ScriptableObject
     }
 
     public UnitType unitType;
+    public Transform ragdollPrefab;
     public float progressMax;
     public Sprite sprite;
     public ResourceAmount[] spawnCostResourceAmountArray;
