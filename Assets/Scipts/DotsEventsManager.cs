@@ -12,6 +12,9 @@ public class DotsEventsManager : MonoBehaviour
     public event EventHandler OnHQDead;
     public event EventHandler OnHealthDead;
 
+    public event EventHandler OnHordeStartedSpawning;
+    public event EventHandler OnHordeStartSpawningSoon;
+
     private void Awake()
     {
         Instance = this;
@@ -39,4 +42,20 @@ public class DotsEventsManager : MonoBehaviour
 
         }
     }
+    public void TriggerOnHordeStartedSpawning(NativeList<Entity> entityNativeList)
+    {
+        foreach (Entity entity in entityNativeList)
+        {
+            OnHordeStartedSpawning?.Invoke(entity, EventArgs.Empty);
+        }
+    }
+
+    public void TriggerOnHordeStartSpawningSoon(NativeList<Entity> entityNativeList)
+    {
+        foreach (Entity entity in entityNativeList)
+        {
+            OnHordeStartSpawningSoon?.Invoke(entity, EventArgs.Empty);
+        }
+    }
+
 }

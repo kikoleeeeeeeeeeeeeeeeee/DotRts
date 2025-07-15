@@ -41,7 +41,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 840281184607055268, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
       propertyPath: m_IsTrigger
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1779797035669028698, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
       propertyPath: m_Mesh
@@ -150,10 +150,13 @@ PrefabInstance:
       addedObject: {fileID: 6923191179485784004}
     - targetCorrespondingSourceObject: {fileID: 7376264397305597259, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7484642560836461863}
+      addedObject: {fileID: 2393036841391080943}
     - targetCorrespondingSourceObject: {fileID: 7376264397305597259, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2393036841391080943}
+      addedObject: {fileID: 3101416451909195062}
+    - targetCorrespondingSourceObject: {fileID: 7376264397305597259, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1612912726334564130}
     - targetCorrespondingSourceObject: {fileID: 2932010756128831442, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7679962986644655342}
@@ -197,29 +200,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hitPositionTransform: {fileID: 1449960620010571837}
---- !u!114 &7484642560836461863
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 309565297556237415}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c90829df28e98d4980213979a40e827, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetPosition:
-    x: 11
-    y: 0
-    z: 12
-  originPosition:
-    x: 11
-    y: 0
-    z: 12
-  distanceMin: 3
-  distanceMax: 10
-  randomSeed: 0
 --- !u!114 &2393036841391080943
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -235,6 +215,41 @@ MonoBehaviour:
   timerMax: 0.5
   damageAmount: 10
   colliderSize: 0.5
+--- !u!114 &3101416451909195062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 309565297556237415}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c90829df28e98d4980213979a40e827, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetPosition:
+    x: 0
+    y: 0
+    z: 0
+  originPosition:
+    x: 0
+    y: 0
+    z: 0
+  distanceMin: 0
+  distanceMax: 0
+  randomSeed: 0
+--- !u!114 &1612912726334564130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 309565297556237415}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 812408fb88d49354ba2f809d6e3a17d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &2729010618049710840 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5172786793618942932, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
