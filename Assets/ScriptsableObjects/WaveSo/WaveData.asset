@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: WaveData
+  m_EditorClassIdentifier: Assembly-CSharp::WaveDataSo
+  globalPreparationTime: 2
+  baseSpawnInterval: 1
+  spawnIntervalReductionPerWave: 0.1
+  waves:
+  - waveNumber: 1
+    waveDuration: 300
+    preparationTime: 1
+    baseZombieCount: 10
+    additionalZombiePerWave: 5
+    spawnInterval: 1
+    zombieHealthMultiplier: 1
+    zombieDamageMultiplier: 1
+    isSpecialWave: 0
+    specialWaveType: 0
+    bossWaveConfig:
+      bossHealth: 0
+      bossDamage: 0
+      bossSpawnDelay: 0
+      minionsCount: 0
+  - waveNumber: 2
+    waveDuration: 60
+    preparationTime: 1
+    baseZombieCount: 15
+    additionalZombiePerWave: 5
+    spawnInterval: 0.95
+    zombieHealthMultiplier: 1.1
+    zombieDamageMultiplier: 1.1
+    isSpecialWave: 0
+    specialWaveType: 0
+    bossWaveConfig:
+      bossHealth: 0
+      bossDamage: 0
+      bossSpawnDelay: 0
+      minionsCount: 0
+  - waveNumber: 3
+    waveDuration: 80
+    preparationTime: 5
+    baseZombieCount: 16
+    additionalZombiePerWave: 4
+    spawnInterval: 0.6
+    zombieHealthMultiplier: 1.5
+    zombieDamageMultiplier: 1.3
+    isSpecialWave: 1
+    specialWaveType: 1
+    bossWaveConfig:
+      bossHealth: 500
+      bossDamage: 20
+      bossSpawnDelay: 20
+      minionsCount: 20

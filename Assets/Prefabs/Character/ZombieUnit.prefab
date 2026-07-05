@@ -135,7 +135,11 @@ PrefabInstance:
       propertyPath: meleeAttackAnimationType
       value: 7
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1223255336107906043, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
+    - {fileID: -5189617540804164020, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
+    - {fileID: -7567074771882460806, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
+    - {fileID: 5434698200410660584, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 5172786793618942932, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
@@ -143,8 +147,8 @@ PrefabInstance:
       addedObject: {fileID: 1449960620010571837}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7376264397305597259, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6506342327779900657}
+      insertIndex: 4
+      addedObject: {fileID: -4965783224382104770}
     - targetCorrespondingSourceObject: {fileID: 7376264397305597259, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6923191179485784004}
@@ -154,9 +158,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7376264397305597259, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3101416451909195062}
-    - targetCorrespondingSourceObject: {fileID: 7376264397305597259, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1612912726334564130}
     - targetCorrespondingSourceObject: {fileID: 2932010756128831442, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7679962986644655342}
@@ -175,7 +176,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7376264397305597259, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
   m_PrefabInstance: {fileID: 7067848330761625900}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6506342327779900657
+--- !u!114 &-4965783224382104770
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -238,18 +239,6 @@ MonoBehaviour:
   distanceMin: 0
   distanceMax: 0
   randomSeed: 0
---- !u!114 &1612912726334564130
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 309565297556237415}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 812408fb88d49354ba2f809d6e3a17d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &2729010618049710840 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5172786793618942932, guid: 042ff2691c398954e8d930ca15fea8b1, type: 3}
