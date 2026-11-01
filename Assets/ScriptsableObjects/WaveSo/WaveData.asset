@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: WaveData
   m_EditorClassIdentifier: Assembly-CSharp::WaveDataSo
-  globalPreparationTime: 2
+  globalPreparationTime: 30
   baseSpawnInterval: 1
   spawnIntervalReductionPerWave: 0.1
   waves:
   - waveNumber: 1
     waveDuration: 300
-    preparationTime: 1
+    preparationTime: 30
     baseZombieCount: 10
     additionalZombiePerWave: 5
     spawnInterval: 1
@@ -33,7 +33,7 @@ MonoBehaviour:
       minionsCount: 0
   - waveNumber: 2
     waveDuration: 60
-    preparationTime: 1
+    preparationTime: 20
     baseZombieCount: 15
     additionalZombiePerWave: 5
     spawnInterval: 0.95
@@ -48,7 +48,7 @@ MonoBehaviour:
       minionsCount: 0
   - waveNumber: 3
     waveDuration: 80
-    preparationTime: 5
+    preparationTime: 20
     baseZombieCount: 16
     additionalZombiePerWave: 4
     spawnInterval: 0.6

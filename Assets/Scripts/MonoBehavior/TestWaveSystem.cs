@@ -3,7 +3,8 @@ using UnityEngine;
 public class TestWaveSystem : MonoBehaviour
 {
     [Header("测试控制")]
-    [SerializeField] private bool enableTestMode = true;
+    [Tooltip("正式流程请保持关闭；开启后 N 键可强制跳波、K 键模拟击杀、R 键重置")]
+    [SerializeField] private bool enableTestMode = false;
 
     private void Update()
     {

@@ -48,9 +48,18 @@ partial struct ZombieTargetBaseSystem : ISystem
         
         if (!hasValidBase)
         {
-            basePosition = float3.zero;
+            // 没有 HQ（尚未放置或已被摧毁）时不给僵尸设置 (0,0,0) 目标，也不逐帧刷日志：
+            // 胜利/失败流程会接管，无需僵尸继续寻路。
+            if (!hasLoggedNoBase)
+            {
+                Debug.LogWarning("[ZombieTarget] 当前没有 HQ，僵尸暂停寻路目标更新。");
+                hasLoggedNoBase = true;
+            }
+            return;
         }
-        
+
+        hasLoggedNoBase = false;
+
         int updateCount = 0;
         foreach ((
             RefRO<Zombie> zombie,
@@ -75,9 +84,6 @@ partial struct ZombieTargetBaseSystem : ISystem
             }
         }
 
-        if (updateCount > 0 && !hasValidBase)
-        {
-            Debug.LogError($"[ZombieTarget] Updated {updateCount} zombies to target (0,0,0) because no HQ exists!");
-        }
+        // hasValidBase 已在上面保证为 true，这里无需再提示缺少 HQ。
     }
 }

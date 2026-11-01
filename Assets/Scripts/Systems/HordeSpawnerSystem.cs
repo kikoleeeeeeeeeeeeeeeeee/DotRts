@@ -6,6 +6,9 @@ using Unity.Transforms;
 
 partial struct HordeSpawnerSystem : ISystem
 {
+    /// <summary>Horde 从第几波开始活动（0 基索引：1 表示第二波）。</summary>
+    private const int hordeFirstActiveWaveIndex = 1;
+
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
@@ -16,6 +19,15 @@ partial struct HordeSpawnerSystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
         EntitiesReferences entitiesReferences = SystemAPI.GetSingleton<EntitiesReferences>();
+
+        // 门控 1：Horde 只在波次进行中活动，避免准备阶段开局就刷出一批僵尸。
+        if (!SystemAPI.HasSingleton<WaveState>()) return;
+        WaveState waveState = SystemAPI.GetSingleton<WaveState>();
+        if (!waveState.isWaveActive) return;
+
+        // 门控 2：Horde 从第二波起才活动。第一波同时叠加波次刷怪会把刚放下的 HQ 直接围死，
+        // 这里延后一波，保证开局至少有喘息时间。
+        if (waveState.currentWaveIndex < hordeFirstActiveWaveIndex) return;
 
         EntityCommandBuffer entityCommandBuffer =
             SystemAPI.GetSingleton<EndFixedStepSimulationEntityCommandBufferSystem.Singleton>()
@@ -64,7 +76,8 @@ partial struct HordeSpawnerSystem : ISystem
             horde.ValueRW.spawnTimer -= SystemAPI.Time.DeltaTime;
             if (horde.ValueRO.spawnTimer <= 0)
             {
-                horde.ValueRW.spawnTimer = horde.ValueRW.spawnTimerMax;
+                // spawnTimerMax 配置为 0 时不能每帧刷一只，否则几十只会在一瞬间涌出。
+                horde.ValueRW.spawnTimer = math.max(0.1f, horde.ValueRO.spawnTimerMax);
 
                 Entity zombieEntity = entityCommandBuffer.Instantiate(entitiesReferences.zombiePrefabEntity);
                 entityCommandBuffer.AddComponent<RuntimeEntity>(zombieEntity);

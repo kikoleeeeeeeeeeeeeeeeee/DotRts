@@ -6,10 +6,12 @@ using UnityEngine;
 partial struct WaveSystemBootstrap : ISystem
 {
     private bool hasInitialized;
+    private int waitFrames;
     
     public void OnCreate(ref SystemState state)
     {
         hasInitialized = false;
+        waitFrames = 0;
     }
     
     public void OnUpdate(ref SystemState state)
@@ -23,32 +25,52 @@ partial struct WaveSystemBootstrap : ISystem
         var query = state.EntityManager.CreateEntityQuery(typeof(WaveState));
         if (query.CalculateEntityCount() > 0)
         {
+            query.Dispose();
             hasInitialized = true;
             state.Enabled = false;
             return;
         }
+        query.Dispose();
         
         var gameSceneTagQuery = state.EntityManager.CreateEntityQuery(typeof(GameSceneTag));
         if (gameSceneTagQuery.CalculateEntityCount() == 0)
         {
-            UnityEngine.Debug.Log("[WaveSystemBootstrap] 等待 GameSceneTag 加载...");
             return;
         }
-        
+        gameSceneTagQuery.Dispose();
+
+        // 单一数据来源：优先使用场景内 WaveManager 上配置的 WaveDataSo，
+        // 避免 Mono 与 ECS 各自读取不同配置导致波次内容不一致。
+        WaveDataSo waveDataSo = null;
+        if (WaveManager.Instance != null)
+        {
+            waveDataSo = WaveManager.Instance.WaveDataSo;
+        }
+
+        if (waveDataSo == null)
+        {
+            waitFrames++;
+            if (waitFrames < 120)
+            {
+                return; // 等待 Mono 侧 Awake/Start 完成注入
+            }
+
+            waveDataSo = Resources.Load<WaveDataSo>("WaveData");
+            if (waveDataSo != null)
+            {
+                UnityEngine.Debug.LogWarning("[WaveSystemBootstrap] WaveManager 未提供 WaveDataSo，已退回 Resources/WaveData。");
+            }
+        }
+
+        if (waveDataSo == null || waveDataSo.waves == null || waveDataSo.waves.Length == 0)
+        {
+            UnityEngine.Debug.LogError("[WaveSystemBootstrap] 无法获取有效的 WaveDataSo（场景 WaveManager 未配置且 Resources/WaveData 也不存在），ECS 侧将使用临时兜底配置。");
+            waveDataSo = CreateDefaultWaveData();
+        }
+
         try
         {
-            UnityEngine.Debug.Log("[WaveSystemBootstrap] 检测到 GameSceneTag，开始初始化波次系统...");
-            
-            WaveDataSo waveDataSo = Resources.Load<WaveDataSo>("WaveData");
-            if (waveDataSo == null)
-            {
-                UnityEngine.Debug.LogError("[WaveSystemBootstrap] Failed to load WaveDataSo from Resources! Using default config. Put WaveDataSo in a Resources folder named 'WaveData'.");
-                waveDataSo = CreateDefaultWaveData();
-            }
-            else
-            {
-                UnityEngine.Debug.Log($"[WaveSystemBootstrap] Loaded WaveDataSo from Resources: {waveDataSo.waves.Length} waves, preparationTime={waveDataSo.globalPreparationTime}s, baseZombieCount={waveDataSo.waves[0].baseZombieCount}");
-            }
+            UnityEngine.Debug.Log($"[WaveSystemBootstrap] 初始化波次数据：{waveDataSo.waves.Length} 波，准备 {waveDataSo.globalPreparationTime}s");
             
             Entity waveConfigEntity = state.EntityManager.CreateEntity();
             state.EntityManager.AddSharedComponent(waveConfigEntity, new WaveConfiguration
@@ -89,11 +111,11 @@ partial struct WaveSystemBootstrap : ISystem
             {
                 currentWaveIndex = 0,
                 isWaveActive = false,
-                isPreparationPhase = true,
+                isPreparationPhase = false,
                 isBasePlaced = false,
                 zombiesKilledInCurrentWave = 0,
                 waveTimer = 0f,
-                preparationTimer = waveDataSo.globalPreparationTime,
+                preparationTimer = 0f,
                 spawnTimer = 0f,
                 zombiesSpawnedInCurrentWave = 0,
                 totalZombiesToSpawn = 0,
@@ -124,7 +146,7 @@ partial struct WaveSystemBootstrap : ISystem
         waveDataSo.waves[0] = new WaveData
         {
             waveNumber = 1,
-            waveDuration = Mathf.Infinity,
+            waveDuration = 300f,
             preparationTime = 5f,
             baseZombieCount = 10,
             additionalZombiePerWave = 5,

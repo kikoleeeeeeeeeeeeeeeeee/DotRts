@@ -26,12 +26,24 @@ public class UnitSelectionManager : MonoBehaviour
     }
     private void Update()
     {
+        if (EventSystem.current == null)
+        {
+            return;
+        }
+
         if (EventSystem.current.IsPointerOverGameObject())
         {
             return;
         }
 
-        if (!BuildingPlaceMentMananger.Instance.GetActiveBuidlingTypeSO().IsNone())
+        // ???????????δ??????????????????? NullReferenceException ?????
+        if (BuildingPlaceMentMananger.Instance == null)
+        {
+            return;
+        }
+
+        BuildingTypeSo activeBuildingType = BuildingPlaceMentMananger.Instance.GetActiveBuidlingTypeSO();
+        if (activeBuildingType != null && !activeBuildingType.IsNone())
         {
             return;
         }
@@ -84,7 +96,7 @@ public class UnitSelectionManager : MonoBehaviour
                     Vector2 unitScreenPosition = Camera.main.WorldToScreenPoint(unitLocalTransform.Position);
                     if (selectionAreaRect.Contains(unitScreenPosition))
                     {
-                        //选中
+                        //???
                         entityManager.SetComponentEnabled<Selected>(entityArray[i], true);
                         Selected selected = entityManager.GetComponentData<Selected>(entityArray[i]);
                         selected.onSelected = true;
@@ -94,7 +106,7 @@ public class UnitSelectionManager : MonoBehaviour
             }
             else
             {
-                //单独选中
+                //???????
                 // new EntityQueryBuilder(Allocator.Temp).WithAll<PhysicsWorldSingleton>().Build(entityManager);
 
                 entityQuery = entityManager.CreateEntityQuery(typeof(PhysicsWorldSingleton));
@@ -236,7 +248,7 @@ public class UnitSelectionManager : MonoBehaviour
 
             }
 
-            //兵营逻辑
+            //??????
             entityQuery = 
                 new EntityQueryBuilder(Allocator.Temp).WithAll<Selected,BuildingBarracks,LocalTransform>().Build(entityManager);
 

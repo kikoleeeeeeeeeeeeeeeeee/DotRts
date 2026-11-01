@@ -1,102 +1,39 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+/// <summary>
+/// 兼容壳：早期版本由它负责创建 <see cref="GameOverUI"/> 与同步按钮引用，
+/// 现在胜负面板已收敛到场景内的唯一 <see cref="GameOverUI"/>。
+///
+/// 保留本组件只为兼容既有场景里的挂载，不再创建对象、不再监听事件，避免双实例竞争。
+/// </summary>
 public class GameOverUi : MonoBehaviour
 {
     [SerializeField] private Button mainMenuButton;
     [SerializeField] private Button restartButton;
 
-    private void Awake()
-    {
-        // 确保 GameOverUI 实例存在
-        if (GameOverUI.Instance == null)
-        {
-            GameObject uiCanvas = FindObjectOfType<Canvas>()?.gameObject;
-            if (uiCanvas == null)
-            {
-                uiCanvas = new GameObject("Canvas");
-                uiCanvas.AddComponent<Canvas>();
-                uiCanvas.AddComponent<CanvasScaler>();
-                uiCanvas.AddComponent<GraphicRaycaster>();
-                uiCanvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
-            }
-
-            GameObject gameOverObj = new GameObject("GameOverUI");
-            gameOverObj.transform.SetParent(uiCanvas.transform);
-            gameOverObj.AddComponent<GameOverUI>();
-        }
-
-        // 同步按钮引用
-        if (mainMenuButton != null)
-        {
-            GameOverUI.Instance.mainMenuButton = mainMenuButton;
-        }
-        if (restartButton != null)
-        {
-            GameOverUI.Instance.restartButton = restartButton;
-        }
-    }
-
     private void Start()
     {
-        DotsEventsManager.Instance.OnHQDead += DotsEventsManager_OnHQDead;
-        if (WaveManager.Instance != null)
+        GameOverUI panel = GameOverUI.Instance;
+        if (panel == null)
         {
-            WaveManager.Instance.OnGameOver += WaveManager_OnGameOver;
+            panel = FindObjectOfType<GameOverUI>();
         }
-        Hide();
-    }
 
-    private void DotsEventsManager_OnHQDead(object sender, System.EventArgs e)
-    {
-        // 重置 buff 系统
-        if (BuffManager.Instance != null)
+        if (panel == null)
         {
-            BuffManager.Instance.ResetBuffs();
+            Debug.LogWarning("[GameOverUi] 场景中没有 GameOverUI 面板，胜负界面将不会显示。请确认 GameScene 中存在挂载 GameOverUI 的对象。");
+            return;
         }
-        Show();
-        Time.timeScale = 0f;
-    }
 
-    private void WaveManager_OnGameOver(object sender, System.EventArgs e)
-    {
-        // 重置 buff 系统
-        if (BuffManager.Instance != null)
+        if (mainMenuButton != null)
         {
-            BuffManager.Instance.ResetBuffs();
+            panel.mainMenuButton = mainMenuButton;
         }
-        Show();
-        Time.timeScale = 0f;
-    }
 
-    private void Hide()
-    {
-        gameObject.SetActive(false);
-        if (GameOverUI.Instance != null)
+        if (restartButton != null)
         {
-            GameOverUI.Instance.HideGameOverUI();
-        }
-    }
-
-    private void Show()
-    {
-        gameObject.SetActive(true);
-        if (GameOverUI.Instance != null)
-        {
-            GameOverUI.Instance.ShowGameOverUI();
-        }
-    }
-
-    private void OnDestroy()
-    {
-        if (DotsEventsManager.Instance != null)
-        {
-            DotsEventsManager.Instance.OnHQDead -= DotsEventsManager_OnHQDead;
-        }
-        if (WaveManager.Instance != null)
-        {
-            WaveManager.Instance.OnGameOver -= WaveManager_OnGameOver;
+            panel.restartButton = restartButton;
         }
     }
 }

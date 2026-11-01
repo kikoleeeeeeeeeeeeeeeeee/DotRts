@@ -49,11 +49,19 @@ partial struct ZombieSpawnerSystem : ISystem
                 if (math.isnan(spawnPosition.x) || math.isnan(spawnPosition.y) || math.isnan(spawnPosition.z))
                     continue;
 
-                Entity zombieEntity = ecb.Instantiate(zombiePrefabEntity);
+                bool isBoss = spawnRequestBuffer[i].isBoss;
+                Entity prefabEntity = isBoss && entitiesReferences.bossPrefabEntity != Entity.Null
+                    ? entitiesReferences.bossPrefabEntity
+                    : zombiePrefabEntity;
+
+                Entity zombieEntity = ecb.Instantiate(prefabEntity);
                 ecb.AddComponent<RuntimeEntity>(zombieEntity);
-                ecb.SetComponent(zombieEntity, LocalTransform.FromPosition(spawnPosition));
+                ecb.SetComponent(zombieEntity, LocalTransform.FromPositionRotationScale(
+                    spawnPosition, quaternion.identity, isBoss ? 1.5f : 1f));
                 ecb.AddComponent<EnemyAttackHQ>(zombieEntity);
                 ecb.SetComponent(zombieEntity, PhysicsMass.CreateKinematic(MassProperties.UnitSphere));
+
+                ApplyZombieStats(ref state, ecb, prefabEntity, zombieEntity, isBoss);
 
                 ecb.SetComponentEnabled<TargetPositionPathQueued>(zombieEntity, true);
                 ecb.SetComponent(zombieEntity, new TargetPositionPathQueued
@@ -121,6 +129,8 @@ partial struct ZombieSpawnerSystem : ISystem
             ecb.AddComponent<EnemyAttackHQ>(zombieEntity2);
             ecb.SetComponent(zombieEntity2, PhysicsMass.CreateKinematic(MassProperties.UnitSphere));
 
+            ApplyZombieStats(ref state, ecb, zombiePrefabEntity, zombieEntity2, false);
+
             ecb.SetComponentEnabled<TargetPositionPathQueued>(zombieEntity2, true);
             ecb.SetComponent(zombieEntity2, new TargetPositionPathQueued
             {
@@ -130,9 +140,62 @@ partial struct ZombieSpawnerSystem : ISystem
 
         distanceHitsList.Dispose();
     }
+
+    /// <summary>
+    /// 按当前波次配置调整新生成僵尸的血量与伤害；Boss 使用 WaveData 中的绝对数值。
+    /// </summary>
+    private void ApplyZombieStats(ref SystemState state, EntityCommandBuffer ecb, Entity prefab, Entity instance, bool isBoss)
+    {
+        float healthMultiplier = 1f;
+        float damageMultiplier = 1f;
+        int bossHealth = 0;
+        int bossDamage = 0;
+
+        if (SystemAPI.HasSingleton<WaveState>())
+        {
+            WaveState waveState = SystemAPI.GetSingleton<WaveState>();
+            healthMultiplier = waveState.zombieHealthMultiplier > 0f ? waveState.zombieHealthMultiplier : 1f;
+            damageMultiplier = waveState.zombieDamageMultiplier > 0f ? waveState.zombieDamageMultiplier : 1f;
+            bossHealth = waveState.bossHealth;
+            bossDamage = waveState.bossDamage;
+        }
+
+        EntityManager entityManager = state.EntityManager;
+
+        if (entityManager.HasComponent<Health>(prefab))
+        {
+            Health health = entityManager.GetComponentData<Health>(prefab);
+            int max = isBoss && bossHealth > 0
+                ? bossHealth
+                : math.max(1, (int)math.round(health.healthAmountMax * healthMultiplier));
+            health.healthAmountMax = max;
+            health.healthAmount = max;
+            health.onHealthChanged = true;
+            ecb.SetComponent(instance, health);
+        }
+
+        if (entityManager.HasComponent<MeleeAttack>(prefab))
+        {
+            MeleeAttack meleeAttack = entityManager.GetComponentData<MeleeAttack>(prefab);
+            meleeAttack.damageAmount = isBoss && bossDamage > 0
+                ? bossDamage
+                : math.max(1, (int)math.round(meleeAttack.damageAmount * damageMultiplier));
+            ecb.SetComponent(instance, meleeAttack);
+        }
+
+        if (entityManager.HasComponent<ShootAttack>(prefab))
+        {
+            ShootAttack shootAttack = entityManager.GetComponentData<ShootAttack>(prefab);
+            shootAttack.damageAmount = isBoss && bossDamage > 0
+                ? bossDamage
+                : math.max(1, (int)math.round(shootAttack.damageAmount * damageMultiplier));
+            ecb.SetComponent(instance, shootAttack);
+        }
+    }
 }
 
 public struct SpawnZombieRequestBuffer : IBufferElementData
 {
     public float3 spawnPosition;
+    public bool isBoss;
 }

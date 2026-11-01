@@ -1398,10 +1398,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   groundLayer:
     serializedVersion: 2
-    m_Bits: 16385
+    m_Bits: 1
   obstacleLayer:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 1536
+  placementCheckRadius: 2
 --- !u!1 &289971861
 GameObject:
   m_ObjectHideFlags: 0
@@ -2479,6 +2480,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameOverPanel: {fileID: 1109670985}
+  titleText: {fileID: 0}
+  gameOverTitle: "\u6E38\u620F\u7ED3\u675F"
+  victoryTitle: "\u80DC\u5229"
   restartButton: {fileID: 441295870}
   mainMenuButton: {fileID: 934281704}
 --- !u!1001 &471006284
@@ -3630,7 +3634,7 @@ MonoBehaviour:
   mapContainer: {fileID: 604261597}
   obstacleLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1536
 --- !u!1 &690547666
 GameObject:
   m_ObjectHideFlags: 0
@@ -6710,7 +6714,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f785920149f56fd49b1b89530b442a49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableTestMode: 1
+  enableTestMode: 0
 --- !u!4 &1261712423 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: b3eae81a4a54d684fb5ecbe732674b38, type: 3}
@@ -7231,7 +7235,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mainMenuButton: {fileID: 1586106352}
-  restartButton: {fileID: 0}
+  restartButton: {fileID: 441295870}
 --- !u!114 &1444220654
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9852,14 +9856,8 @@ MonoBehaviour:
   basePlacementSystem: {fileID: 283727781}
   gameOverUI: {fileID: 470816066}
   buffManager: {fileID: 1243214902}
-  currentWaveIndex: 0
-  isWaveActive: 0
-  isPreparationPhase: 0
-  isBasePlaced: 0
-  zombiesKilledInCurrentWave: 0
-  waveTimer: 0
-  preparationTimer: 0
-  isInitialized: 0
+  basePlacementTimeout: 60
+  verboseLogging: 0
 --- !u!1 &2113170138
 GameObject:
   m_ObjectHideFlags: 0

@@ -195,13 +195,13 @@ public class BuffSelectionUI : MonoBehaviour
         {
             buffPanel.transform.parent.gameObject.SetActive(true);
         }
-        Time.timeScale = 0;
+        GameTimeController.RequestPause(GameTimeController.BuffSelectionReason);
     }
 
     private void HideBuffSelection()
     {
         buffPanel.SetActive(false);
-        Time.timeScale = 1;
+        GameTimeController.ReleasePause(GameTimeController.BuffSelectionReason);
     }
 
     private void UpdateBuffButton(List<BuffData> buffOptions, int index, Button button, Text text)

@@ -73,11 +73,16 @@ partial struct HealthDeadSystem : ISystem
             }
         }
 
-        // 如果有僵尸死亡，通知事件管理器
-        // WaveKillListener 会监听此事件并通知 WaveManager 更新击杀计数
+        // 如果有僵尸死亡，先累加到波次统计（ECS 为权威），再通知事件管理器
         if (deadZombiesList.Length > 0)
         {
-            DotsEventsManager.Instance.TriggerOnZombieDead(deadZombiesList);
+            if (SystemAPI.HasSingleton<WaveState>())
+            {
+                RefRW<WaveState> waveState = SystemAPI.GetSingletonRW<WaveState>();
+                waveState.ValueRW.zombiesKilledInCurrentWave += deadZombiesList.Length;
+            }
+
+            DotsEventsManager.Instance?.TriggerOnZombieDead(deadZombiesList);
         }
     }
 }

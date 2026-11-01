@@ -40,7 +40,7 @@ partial struct ResetEventsSystem : ISystem
 
                 if (hqhealth.onDead)
                 {
-                    DotsEventsManager.Instance.TriggerOnHQDead();
+                    DotsEventsManager.Instance?.TriggerOnHQDead();
                 }
             }
         }
@@ -87,7 +87,8 @@ partial struct ResetEventsSystem : ISystem
         jobHandleNativeArray.Dispose();
         onBarracksUnitQueueChangeEntityList.Dispose();
         onHealthDeadEntityList.Dispose();
-
+        onHordeStartedSpawningEntityList.Dispose();
+        onHordeStartSpawningSoonEntityList.Dispose();
     }
 }
 
@@ -110,7 +111,6 @@ public partial struct ResetHealthEventsJob : IJobEntity
     {
         if (health.onDead)
         {
-            UnityEngine.Debug.Log("have dead");
             onHealthDeadEntityList.AddNoResize(entity);
         }
 

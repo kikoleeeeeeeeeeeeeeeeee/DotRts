@@ -13,6 +13,9 @@ public class ResrouceManager : MonoBehaviour
     [SerializeField] private ResrouceTypeListSo resourceTypeListSO;
     private Dictionary<ResourceTypeSo.ResourceType, int> resourceTypeAmountDicitonary;
 
+    /// <summary>资源获取倍率（由 BuffManager 的资源类 Buff 叠加），只影响正收益。</summary>
+    [NonSerialized] public float GainMultiplier = 1f;
+
 
     private void Awake()
     {
@@ -32,7 +35,13 @@ public class ResrouceManager : MonoBehaviour
 
     public void AddResourceAmount(ResourceTypeSo.ResourceType resourceType, int amount)
     {
-        resourceTypeAmountDicitonary[resourceType] += amount;
+        int finalAmount = amount;
+        if (amount > 0 && GainMultiplier > 1f)
+        {
+            finalAmount = Mathf.Max(1, Mathf.RoundToInt(amount * GainMultiplier));
+        }
+
+        resourceTypeAmountDicitonary[resourceType] += finalAmount;
         OnResouceAmountChanged?.Invoke(this, EventArgs.Empty);
     }
 

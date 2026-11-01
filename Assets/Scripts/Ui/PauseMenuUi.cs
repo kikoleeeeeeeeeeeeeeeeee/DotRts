@@ -71,7 +71,7 @@ public class PauseMenuUi : MonoBehaviour
 
     private void PauseGame()
     {
-        Time.timeScale = 0f;
+        GameTimeController.RequestPause(GameTimeController.PauseMenuReason);
         if (pauseMenuPanel != null)
         {
             pauseMenuPanel.SetActive(true);
@@ -80,7 +80,7 @@ public class PauseMenuUi : MonoBehaviour
 
     private void ResumeGame()
     {
-        Time.timeScale = 1f;
+        GameTimeController.ReleasePause(GameTimeController.PauseMenuReason);
         if (pauseMenuPanel != null)
         {
             pauseMenuPanel.SetActive(false);
@@ -89,7 +89,7 @@ public class PauseMenuUi : MonoBehaviour
 
     private void QuitGame()
     {
-        Time.timeScale = 1f;
+        GameTimeController.ClearAll();
         SceneManager.LoadScene("MainMenuScene");
     }
 }

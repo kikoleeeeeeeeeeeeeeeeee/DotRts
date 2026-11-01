@@ -233,7 +233,7 @@ public class BuffManager : MonoBehaviour
     {
         if (buff.buffType == BuffType.ResourceGain)
         {
-            // 这里需要根据实际的资源系统实现
+            ApplyResourceGainMultiplier(buff.value);
         }
     }
 
@@ -241,13 +241,20 @@ public class BuffManager : MonoBehaviour
     {
         if (buff.buffType == BuffType.DirectResource)
         {
-            // 直接给予资源
             GiveDirectResource(buff.value);
         }
         else if (buff.buffType == BuffType.ResourceGain)
         {
-            // 提高资源获取率
+            ApplyResourceGainMultiplier(buff.value);
         }
+    }
+
+    private void ApplyResourceGainMultiplier(float percent)
+    {
+        if (ResrouceManager.Instance == null) return;
+
+        ResrouceManager.Instance.GainMultiplier += percent / 100f;
+        Debug.Log($"[BuffManager] 资源获取倍率提升到 x{ResrouceManager.Instance.GainMultiplier:F2}");
     }
 
     // 辅助方法：应用攻击伤害 buff 到所有单位
@@ -660,6 +667,11 @@ public class BuffManager : MonoBehaviour
         selectedBuffs.Clear();
         currentBuffOptions.Clear();
         isSelectingBuff = false;
+
+        if (ResrouceManager.Instance != null)
+        {
+            ResrouceManager.Instance.GainMultiplier = 1f;
+        }
     }
 
     public List<BuffData> GetSelectedBuffs()

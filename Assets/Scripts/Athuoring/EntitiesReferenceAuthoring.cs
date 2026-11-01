@@ -5,6 +5,8 @@ public class EntitiesReferenceAuthoring : MonoBehaviour
 {
     public GameObject bulletPrefabGameObject;
     public GameObject zombiePrefabGameObject;
+    [Tooltip("Boss 预制体，可留空；留空时 Boss 波使用普通僵尸预制体并套用 WaveData 中的 Boss 数值")]
+    public GameObject bossPrefabGameObject;
     public GameObject shootLightPrefabGameObject;
     public GameObject scoutPrefabGameObject;
     public GameObject soldierPrefabGameObject;
@@ -38,6 +40,9 @@ public class EntitiesReferenceAuthoring : MonoBehaviour
                 bulletPrefabEntity = GetEntity(authoring.bulletPrefabGameObject, TransformUsageFlags.Dynamic),
                 // 关键：僵尸预制体使用 Renderable 标志，确保包含渲染组件
                 zombiePrefabEntity = GetEntity(authoring.zombiePrefabGameObject, TransformUsageFlags.Renderable),
+                bossPrefabEntity = authoring.bossPrefabGameObject != null
+                    ? GetEntity(authoring.bossPrefabGameObject, TransformUsageFlags.Renderable)
+                    : Entity.Null,
                 shootLightPrefabEntity = GetEntity(authoring.shootLightPrefabGameObject, TransformUsageFlags.Dynamic),
                 scoutPrefabEntity = GetEntity(authoring.scoutPrefabGameObject, TransformUsageFlags.Dynamic),
                 soldierPrefabEntity = GetEntity(authoring.soldierPrefabGameObject, TransformUsageFlags.Dynamic),
@@ -64,6 +69,7 @@ public struct EntitiesReferences : IComponentData
 {
     public Entity bulletPrefabEntity;
     public Entity zombiePrefabEntity;
+    public Entity bossPrefabEntity;
     public Entity shootLightPrefabEntity;
     public Entity scoutPrefabEntity;
     public Entity soldierPrefabEntity;
