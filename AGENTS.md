@@ -43,7 +43,6 @@
 
 ## 注意事项
 - `.vscode/settings.json` 在文件浏览器中隐藏了 `.asset`、`.prefab`、`.unity`、`.meta` 等文件 — **这些文件实际存在且很重要**，不要误删
-- `.trae/specs/` 有最近的设计文档，涉及丧尸生成系统的 ECS 重构
 - 无 CI/CD、无 Linter、无 `.editorconfig`
 - 项目包含移动端支持（Android 计费、独立 Renderer 配置）
 - ScriptableObject 配置位于 `Assets/ScriptsableObjects/`（建筑、资源、单位、波次等）
