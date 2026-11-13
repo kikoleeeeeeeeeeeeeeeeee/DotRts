@@ -1,4 +1,5 @@
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.Transforms;
 
 partial struct BuildingBarrackSystem : ISystem
@@ -70,16 +71,48 @@ partial struct BuildingBarrackSystem : ISystem
             spawnUnitTypeBuffers.RemoveAt(0);
             buildingBarracks.ValueRW.onUnitQueueChanged = true;
 
-            Entity spawnedUnitEntity = ecb.Instantiate(unitTypeSo.GetPrefabEntity(entitiesReferences));
-            ecb.AddComponent<RuntimeEntity>(spawnedUnitEntity);
-            
-            ecb.SetComponent(spawnedUnitEntity, LocalTransform.FromPosition(localTransform.ValueRO.Position));
+            // 「生产数量」Buff：累计百分比每满 100% 就多产 1 个，余量留到下次，避免 20% 这类加成被舍入吞掉。
+            int extraCount = 0;
+            float bonusPercent = buildingBarracks.ValueRO.productionCountBonusPercent;
+            if (bonusPercent > 0f)
+            {
+                buildingBarracks.ValueRW.productionCountCarry += bonusPercent / 100f;
+                const int maxExtraPerCycle = 8;
+                while (buildingBarracks.ValueRO.productionCountCarry >= 1f && extraCount < maxExtraPerCycle)
+                {
+                    buildingBarracks.ValueRW.productionCountCarry -= 1f;
+                    extraCount++;
+                }
+                if (extraCount >= maxExtraPerCycle)
+                {
+                    buildingBarracks.ValueRW.productionCountCarry = 0f;
+                }
+            }
 
-            ecb.SetComponent(spawnedUnitEntity, new MoveOverride {
-                targetPosition = localTransform.ValueRO.Position + buildingBarracks.ValueRO.rallyPositionOffset
-            });
+            int spawnCount = 1 + extraCount;
+            for (int i = 0; i < spawnCount; i++)
+            {
+                // 多产的第一个单位照旧堆在兵营中心，其余的围一圈散开，避免完全重叠。
+                float3 spawnPosition = localTransform.ValueRO.Position;
+                if (i > 0)
+                {
+                    float angle = (i - 1) * math.PI * 2f / math.max(1, spawnCount - 1);
+                    spawnPosition += new float3(math.cos(angle), 0f, math.sin(angle)) * 1.5f;
+                }
 
-            ecb.SetComponentEnabled<MoveOverride>(spawnedUnitEntity, true);
+                Entity spawnedUnitEntity = ecb.Instantiate(unitTypeSo.GetPrefabEntity(entitiesReferences));
+                ecb.AddComponent<RuntimeEntity>(spawnedUnitEntity);
+                ecb.AddComponent<PendingGlobalBuff>(spawnedUnitEntity);
+
+                ecb.SetComponent(spawnedUnitEntity, LocalTransform.FromPosition(spawnPosition));
+
+                ecb.SetComponent(spawnedUnitEntity, new MoveOverride
+                {
+                    targetPosition = spawnPosition + buildingBarracks.ValueRO.rallyPositionOffset
+                });
+
+                ecb.SetComponentEnabled<MoveOverride>(spawnedUnitEntity, true);
+            }
         }
     }
 }

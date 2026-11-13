@@ -35,6 +35,7 @@ partial struct BasePlacementECS : ISystem
             // 使用预制体 Entity 进行实例化（继承所有烘焙的组件）
             Entity hqEntity = ecb.Instantiate(placeRequest.ValueRO.hqPrefabEntity);
             ecb.AddComponent<RuntimeEntity>(hqEntity);
+            ecb.AddComponent<PendingGlobalBuff>(hqEntity);
 
             // 设置位置
             ecb.SetComponent(hqEntity, new LocalTransform

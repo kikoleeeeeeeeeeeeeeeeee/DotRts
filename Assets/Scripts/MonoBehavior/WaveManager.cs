@@ -116,6 +116,12 @@ public class WaveManager : MonoBehaviour
         EnsureBuffManager();
         HookBasePlacementSystem();
 
+        // 重开一局时清空上一局残留的持久化 Buff 乘区（场景重载不会重建 ECS 世界）。
+        if (buffManager != null)
+        {
+            buffManager.ClearGlobalBuffs();
+        }
+
         isInitialized = true;
         StartPreparationPhase();
     }

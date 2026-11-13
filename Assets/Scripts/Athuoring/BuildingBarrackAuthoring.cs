@@ -37,6 +37,12 @@ public struct BuildingBarracks : IComponentData
     public UnitTypeSo.UnitType activeUnitType;
     public float3 rallyPositionOffset;
     public bool onUnitQueueChanged;
+
+    /// <summary>「生产数量」Buff 累计的百分比加成（由 BuffManager / GlobalBuffApplySystem 写入）。</summary>
+    public float productionCountBonusPercent;
+
+    /// <summary>不足 100% 的余量，攒满 100% 就多产 1 个，避免 20% 这类加成被四舍五入吞掉。</summary>
+    public float productionCountCarry;
 }
 
 

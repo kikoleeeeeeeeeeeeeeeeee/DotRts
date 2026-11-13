@@ -124,6 +124,16 @@ partial struct WaveSystemBootstrap : ISystem
             
             // 添加生成请求 Buffer（类似兵营的 SpawnUnitTypeBuffer）
             state.EntityManager.AddBuffer<SpawnZombieRequestBuffer>(waveStateEntity);
+
+            // 全局 Buff 乘区单例：跨波保留，新单位/建筑出生时由 GlobalBuffApplySystem 应用。
+            if (!SystemAPI.HasSingleton<GlobalBuff>())
+            {
+                Entity globalBuffEntity = state.EntityManager.CreateEntity();
+                state.EntityManager.AddComponentData(globalBuffEntity, new GlobalBuff
+                {
+                    modifiers = new Unity.Collections.FixedList512Bytes<BuffModifier>()
+                });
+            }
             
             UnityEngine.Debug.Log($"[WaveSystemBootstrap] 波次系统初始化完成！创建了 {waveDataSo.waves.Length} 个波次配置");
             

@@ -100,6 +100,9 @@ public class BuffManager : MonoBehaviour
 
     private void ApplyBuff(BuffData buff)
     {
+        // 先记录到全局乘区：之后生产的单位/新建的建筑出生时会自动应用。
+        RecordGlobalBuff(buff);
+
         switch (buff.targetType)
         {
             case BuffTargetType.AllUnits:
@@ -129,6 +132,8 @@ public class BuffManager : MonoBehaviour
 
     private void ApplyBuffToAllUnits(BuffData buff)
     {
+        // 约定：AllUnits 指「玩家方全部实体」——单位、HQ、建筑都算，但绝不能加强僵尸。
+        // 各 Apply*BuffToUnits 内部都会跳过带 Zombie 的实体。
         EntityManager entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
         switch (buff.buffType)
         {
@@ -265,6 +270,8 @@ public class BuffManager : MonoBehaviour
         var meleeAttackEntities = meleeAttackQuery.ToEntityArray(Unity.Collections.Allocator.Temp);
         foreach (var entity in meleeAttackEntities)
         {
+            // AllUnits 只作用于玩家方，不能把僵尸一起加强。
+            if (entityManager.HasComponent<Zombie>(entity)) continue;
             if (entityManager.HasComponent<MeleeAttack>(entity))
             {
                 var meleeAttack = entityManager.GetComponentData<MeleeAttack>(entity);
@@ -279,6 +286,7 @@ public class BuffManager : MonoBehaviour
         var shootAttackEntities = shootAttackQuery.ToEntityArray(Unity.Collections.Allocator.Temp);
         foreach (var entity in shootAttackEntities)
         {
+            if (entityManager.HasComponent<Zombie>(entity)) continue;
             if (entityManager.HasComponent<ShootAttack>(entity))
             {
                 var shootAttack = entityManager.GetComponentData<ShootAttack>(entity);
@@ -297,6 +305,7 @@ public class BuffManager : MonoBehaviour
         var meleeAttackEntities = meleeAttackQuery.ToEntityArray(Unity.Collections.Allocator.Temp);
         foreach (var entity in meleeAttackEntities)
         {
+            if (entityManager.HasComponent<Zombie>(entity)) continue;
             if (entityManager.HasComponent<MeleeAttack>(entity))
             {
                 var meleeAttack = entityManager.GetComponentData<MeleeAttack>(entity);
@@ -311,6 +320,7 @@ public class BuffManager : MonoBehaviour
         var shootAttackEntities = shootAttackQuery.ToEntityArray(Unity.Collections.Allocator.Temp);
         foreach (var entity in shootAttackEntities)
         {
+            if (entityManager.HasComponent<Zombie>(entity)) continue;
             if (entityManager.HasComponent<ShootAttack>(entity))
             {
                 var shootAttack = entityManager.GetComponentData<ShootAttack>(entity);
@@ -328,6 +338,7 @@ public class BuffManager : MonoBehaviour
         var healthEntities = healthQuery.ToEntityArray(Unity.Collections.Allocator.Temp);
         foreach (var entity in healthEntities)
         {
+            if (entityManager.HasComponent<Zombie>(entity)) continue;
             if (entityManager.HasComponent<Health>(entity))
             {
                 var health = entityManager.GetComponentData<Health>(entity);
@@ -348,6 +359,7 @@ public class BuffManager : MonoBehaviour
         var moverEntities = moverQuery.ToEntityArray(Unity.Collections.Allocator.Temp);
         foreach (var entity in moverEntities)
         {
+            if (entityManager.HasComponent<Zombie>(entity)) continue;
             if (entityManager.HasComponent<UnityMover>(entity))
             {
                 var mover = entityManager.GetComponentData<UnityMover>(entity);
@@ -365,6 +377,7 @@ public class BuffManager : MonoBehaviour
         var shootAttackEntities = shootAttackQuery.ToEntityArray(Unity.Collections.Allocator.Temp);
         foreach (var entity in shootAttackEntities)
         {
+            if (entityManager.HasComponent<Zombie>(entity)) continue;
             if (entityManager.HasComponent<ShootAttack>(entity))
             {
                 var shootAttack = entityManager.GetComponentData<ShootAttack>(entity);
@@ -569,7 +582,17 @@ public class BuffManager : MonoBehaviour
     // 应用生产数量 buff 到兵营
     private void ApplyProductionCountBuffToBarracks(EntityManager entityManager, float value)
     {
-        // 这里需要根据实际的兵营组件实现
+        var query = entityManager.CreateEntityQuery(typeof(BuildingBarracks));
+        var entities = query.ToEntityArray(Unity.Collections.Allocator.Temp);
+        foreach (var entity in entities)
+        {
+            var barracks = entityManager.GetComponentData<BuildingBarracks>(entity);
+            barracks.productionCountBonusPercent += value;
+            entityManager.SetComponentData(entity, barracks);
+        }
+        entities.Dispose();
+
+        Debug.Log($"[BuffManager] 兵营生产数量 +{value}%，之后每次生产按百分比多产（每满 100% 多出 1 个）。");
     }
 
     // 应用攻击伤害 buff 到炮台
@@ -672,6 +695,54 @@ public class BuffManager : MonoBehaviour
         {
             ResrouceManager.Instance.GainMultiplier = 1f;
         }
+
+        ClearGlobalBuffs();
+    }
+
+    /// <summary>把一次 Buff 选择记录到全局乘区（跨波、对新单位生效）。</summary>
+    private void RecordGlobalBuff(BuffData buff)
+    {
+        if (!TryGetGlobalBuffEntity(out EntityManager entityManager, out Entity globalBuffEntity)) return;
+
+        GlobalBuff globalBuff = entityManager.GetComponentData<GlobalBuff>(globalBuffEntity);
+        if (globalBuff.modifiers.Length >= globalBuff.modifiers.Capacity) return;
+
+        globalBuff.modifiers.Add(new BuffModifier
+        {
+            buffType = buff.buffType,
+            targetType = buff.targetType,
+            value = buff.value
+        });
+        entityManager.SetComponentData(globalBuffEntity, globalBuff);
+    }
+
+    /// <summary>清空全局乘区（新开一局时调用）。</summary>
+    public void ClearGlobalBuffs()
+    {
+        if (!TryGetGlobalBuffEntity(out EntityManager entityManager, out Entity globalBuffEntity)) return;
+
+        GlobalBuff globalBuff = entityManager.GetComponentData<GlobalBuff>(globalBuffEntity);
+        globalBuff.modifiers.Clear();
+        entityManager.SetComponentData(globalBuffEntity, globalBuff);
+    }
+
+    private bool TryGetGlobalBuffEntity(out EntityManager entityManager, out Entity globalBuffEntity)
+    {
+        entityManager = default;
+        globalBuffEntity = Entity.Null;
+
+        World world = World.DefaultGameObjectInjectionWorld;
+        if (world == null || !world.IsCreated) return false;
+
+        entityManager = world.EntityManager;
+        EntityQuery query = entityManager.CreateEntityQuery(typeof(GlobalBuff));
+        bool found = query.CalculateEntityCount() > 0;
+        if (found)
+        {
+            globalBuffEntity = query.GetSingletonEntity();
+        }
+        query.Dispose();
+        return found;
     }
 
     public List<BuffData> GetSelectedBuffs()

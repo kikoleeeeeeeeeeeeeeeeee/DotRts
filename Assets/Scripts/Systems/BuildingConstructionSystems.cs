@@ -36,6 +36,7 @@ partial struct BuildingConstructionSystems : ISystem
             {
                 Entity spawnedBuildingEntity = entityCommandBuffer.Instantiate(buildingConstruction.ValueRO.finalPrefabEntity);
                 entityCommandBuffer.AddComponent<RuntimeEntity>(spawnedBuildingEntity);
+                entityCommandBuffer.AddComponent<PendingGlobalBuff>(spawnedBuildingEntity);
                 entityCommandBuffer.SetComponent(spawnedBuildingEntity, LocalTransform.FromPosition(localTransform.ValueRO.Position));
 
 
