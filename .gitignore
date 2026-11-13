@@ -73,3 +73,7 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+# --- 本地工具 / AI 代理临时文件（不纳入版本管理） ---
+/.trae/
+/_mcp.ps1
+*.zip
