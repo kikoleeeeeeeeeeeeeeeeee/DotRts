@@ -15,6 +15,12 @@ using static GridSystem;
 [UpdateBefore(typeof(ZombieSpawnerSystem))]
 partial struct WaveSystem : ISystem
 {
+    /// <summary>虫群波：僵尸数量倍率。</summary>
+    private const float swarmZombieCountMultiplier = 2f;
+
+    /// <summary>虫群波：投放间隔缩放（小于 1 表示更密集）。</summary>
+    private const float swarmSpawnIntervalScale = 0.6f;
+
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<WaveState>();
@@ -66,6 +72,14 @@ partial struct WaveSystem : ISystem
             float healthMultiplier = waveData.zombieHealthMultiplier > 0f ? waveData.zombieHealthMultiplier : 1f;
             float damageMultiplier = waveData.zombieDamageMultiplier > 0f ? waveData.zombieDamageMultiplier : 1f;
             bool isBossWave = waveData.isSpecialWave && waveData.specialWaveType == SpecialWaveType.Boss;
+            bool isSwarmWave = waveData.isSpecialWave && waveData.specialWaveType == SpecialWaveType.Swarm;
+
+            // 虫群波：数量更多、投放更密集，且不生成 Boss。
+            if (isSwarmWave)
+            {
+                totalZombies = math.max(1, (int)math.round(totalZombies * swarmZombieCountMultiplier));
+                spawnInterval = math.max(0.1f, spawnInterval * swarmSpawnIntervalScale);
+            }
 
             foreach (RefRW<WaveState> waveState in SystemAPI.Query<RefRW<WaveState>>())
             {
@@ -86,7 +100,8 @@ partial struct WaveSystem : ISystem
             }
 
             Debug.Log($"[WaveSystem] 第 {waveIndex + 1} 波配置：{totalZombies} 只，间隔 {spawnInterval:F2}s，血量 x{healthMultiplier:F2}，伤害 x{damageMultiplier:F2}" +
-                      (isBossWave ? $"，Boss 波（延迟 {waveData.bossWaveConfig.bossSpawnDelay:F1}s）" : ""));
+                      (isBossWave ? $"，Boss 波（延迟 {waveData.bossWaveConfig.bossSpawnDelay:F1}s）" : "") +
+                      (isSwarmWave ? "，虫群波（数量翻倍、投放更密集）" : ""));
             ecb.DestroyEntity(eventEntity);
         }
     }
@@ -196,14 +211,23 @@ partial struct WaveSystem : ISystem
 
         float mapWidth = 200f;
         float mapHeight = 200f;
+        float spawnAreaRadius = 0f;
         if (SystemAPI.HasSingleton<MapConfigData>())
         {
             MapConfigData mapConfig = SystemAPI.GetSingleton<MapConfigData>();
             if (mapConfig.mapWidth > 0) mapWidth = mapConfig.mapWidth;
             if (mapConfig.mapHeight > 0) mapHeight = mapConfig.mapHeight;
+            spawnAreaRadius = mapConfig.spawnAreaRadius;
         }
 
-        float edgeDistance = math.min(mapWidth, mapHeight) * 0.4f;
+        // 优先消费地图配置里的刷怪半径；未配置时退回「地图短边的 40%」。
+        float edgeDistance = spawnAreaRadius > 0f
+            ? spawnAreaRadius
+            : math.min(mapWidth, mapHeight) * 0.4f;
+
+        // 留 2 单位内边距，避免刷怪点被 clamp 到地图边界之外。
+        float maxEdgeDistance = math.max(1f, math.min(mapWidth, mapHeight) * 0.5f - 2f);
+        edgeDistance = math.clamp(edgeDistance, 1f, maxEdgeDistance);
 
         float angleRadians = math.radians(UnityEngine.Random.Range(0f, 360f));
         float3 spawnDirection = new float3(math.cos(angleRadians), 0f, math.sin(angleRadians));
