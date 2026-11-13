@@ -6650,23 +6650,59 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   availableBuffs:
-  - buffName: 1
-    description: "\u589E\u52A05\u70B9\u4F24\u5BB3"
+  - buffName: "\u653B\u51FB\u529B\u63D0\u5347"
+    description: "\u6240\u6709\u5355\u4F4D\u653B\u51FB\u529B +10%"
     buffType: 0
     targetType: 0
-    value: 5
+    value: 10
     icon: {fileID: 0}
-  - buffName: 2
-    description: "\u83B7\u53D6\u901F\u5EA6+5"
+  - buffName: "\u751F\u547D\u5F3A\u5316"
+    description: "\u6240\u6709\u5355\u4F4D\u4E0E\u5EFA\u7B51\u751F\u547D +15%"
+    buffType: 2
+    targetType: 0
+    value: 15
+    icon: {fileID: 0}
+  - buffName: "\u6025\u884C\u519B"
+    description: "\u6240\u6709\u5355\u4F4D\u79FB\u52A8\u901F\u5EA6 +10%"
+    buffType: 3
+    targetType: 0
+    value: 10
+    icon: {fileID: 0}
+  - buffName: "\u706B\u529B\u538B\u5236"
+    description: "\u58EB\u5175\u653B\u51FB\u901F\u5EA6 +15%"
+    buffType: 1
+    targetType: 1
+    value: 15
+    icon: {fileID: 0}
+  - buffName: "\u57FA\u5730\u706B\u529B"
+    description: "HQ \u653B\u51FB\u529B +20%"
     buffType: 0
-    targetType: 6
-    value: 5
+    targetType: 2
+    value: 20
     icon: {fileID: 0}
-  - buffName: 3
-    description: "\u8D44\u6E90+20"
+  - buffName: "\u57FA\u5730\u52A0\u56FA"
+    description: "HQ \u751F\u547D\u503C +25%"
+    buffType: 2
+    targetType: 2
+    value: 25
+    icon: {fileID: 0}
+  - buffName: "\u6269\u7F16"
+    description: "\u5175\u8425\u751F\u4EA7\u6570\u91CF +50%\uFF08\u7D2F\u8BA1\u6EE1 100% \u6BCF\u6B21\u591A\u4EA7 1 \u4E2A\uFF09"
+    buffType: 5
+    targetType: 3
+    value: 50
+    icon: {fileID: 0}
+  - buffName: "\u9AD8\u6548\u91C7\u96C6"
+    description: "\u8D44\u6E90\u83B7\u53D6 +20%"
+    buffType: 6
+    targetType: 5
+    value: 20
+    icon: {fileID: 0}
+  - buffName: "\u7D27\u6025\u8865\u7ED9"
+    description: "\u7ACB\u5373\u83B7\u5F97\u5404\u8D44\u6E90 +30"
     buffType: 7
     targetType: 6
-    value: 20
+    value: 30
     icon: {fileID: 0}
   buffOptionsCount: 3
   buffSelectionUI: {fileID: 1144382488}

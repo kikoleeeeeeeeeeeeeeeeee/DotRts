@@ -109,7 +109,6 @@ public class BuildingPlaceMentMananger : MonoBehaviour
                 isResourceBuilding = true;
                 break;
         }
-        Debug.Log($"Building type: {buildingTypeSO.buildingType}, isResourceBuilding: {isResourceBuilding}");
 
         // 碰撞过滤条件 - 添加 ground layer
         int groundLayer = LayerMask.NameToLayer("Ground");
@@ -126,7 +125,6 @@ public class BuildingPlaceMentMananger : MonoBehaviour
             Debug.LogError("BuildingTypeSO prefab is not assigned for: " + buildingTypeSO.buildingType);
             return false;
         }
-        Debug.Log("Prefab is valid: " + buildingTypeSO.prefab.name);
 
         UnityEngine.BoxCollider boxCollider = buildingTypeSO.prefab.GetComponent<UnityEngine.BoxCollider>();
         if (boxCollider == null)
@@ -134,13 +132,11 @@ public class BuildingPlaceMentMananger : MonoBehaviour
             Debug.LogError("BoxCollider not found on prefab for: " + buildingTypeSO.buildingType);
             return false;
         }
-        Debug.Log("BoxCollider found, size: " + boxCollider.size);
 
         float bonusExtents = 1.1f;
 
         NativeList<DistanceHit> distanceHitList = new NativeList<DistanceHit>(Allocator.Temp);
 
-        Debug.Log("Before OverlapBox, position: " + mouseWorldPosition);
         // 为资源建筑创建特殊的碰撞过滤器，允许与资源点碰撞
         CollisionFilter checkCollisionFilter = collisionFilter;
         if (isResourceBuilding)
@@ -154,12 +150,10 @@ public class BuildingPlaceMentMananger : MonoBehaviour
             };
         }
 
-        if (
-        collisionWorld.OverlapBox(mouseWorldPosition,
+        if (collisionWorld.OverlapBox(mouseWorldPosition,
             Quaternion.identity, boxCollider.size * .5f * bonusExtents,
             ref distanceHitList, checkCollisionFilter))
         {
-            Debug.Log("OverlapBox collision detected, hit count: " + distanceHitList.Length);
             // 检查是否为资源采集建筑，且碰撞的是资源点
             if (isResourceBuilding)
             {
@@ -169,51 +163,43 @@ public class BuildingPlaceMentMananger : MonoBehaviour
                     if (entityManager.HasComponent<ResourceTypeSoHolder>(distanceHit.Entity))
                     {
                         hasResourceCollision = true;
-                        Debug.Log("OverlapBox collision with resource (allowed for resource building)");
                         break;
                     }
                 }
                 if (!hasResourceCollision)
                 {
-                    Debug.Log("OverlapBox collision with non-resource object");
+                    distanceHitList.Dispose();
                     return false;
                 }
             }
             else
             {
-                Debug.Log("OverlapBox collision detected");
+                distanceHitList.Dispose();
                 return false;
             }
         }
-        else
-        {
-            Debug.Log("No OverlapBox collision detected");
-        }
 
         distanceHitList.Clear();
-        Debug.Log("Before OverlapSphere, distance: " + buildingTypeSO.buildingDistanceMin);
-        if(collisionWorld.OverlapSphere(
+        if (collisionWorld.OverlapSphere(
             mouseWorldPosition,
             buildingTypeSO.buildingDistanceMin,
             ref distanceHitList,
             collisionFilter))
         {
-            Debug.Log("OverlapSphere collision detected, hit count: " + distanceHitList.Length);
-            foreach(DistanceHit distanceHit in distanceHitList)
+            foreach (DistanceHit distanceHit in distanceHitList)
             {
                 // 资源采集建筑应该忽略与资源点的碰撞
                 if (isResourceBuilding && entityManager.HasComponent<ResourceTypeSoHolder>(distanceHit.Entity))
                 {
-                    Debug.Log("Ignoring resource collision for resource building");
                     continue;
                 }
 
                 if (entityManager.HasComponent<BuildingTypeSOHolder>(distanceHit.Entity))
                 {
                     BuildingTypeSOHolder buildingTypeSOHolder = entityManager.GetComponentData<BuildingTypeSOHolder>(distanceHit.Entity);
-                    if(buildingTypeSOHolder.buildingType == buildingTypeSO.buildingType)
+                    if (buildingTypeSOHolder.buildingType == buildingTypeSO.buildingType)
                     {
-                        Debug.Log("Found same building type, returning false");
+                        distanceHitList.Dispose();
                         return false;
                     }
                 }
@@ -222,80 +208,58 @@ public class BuildingPlaceMentMananger : MonoBehaviour
                     BuildignConstruction buildignConstruction = entityManager.GetComponentData<BuildignConstruction>(distanceHit.Entity);
                     if (buildignConstruction.buildingType == buildingTypeSO.buildingType)
                     {
-                        Debug.Log("Found same building construction, returning false");
+                        distanceHitList.Dispose();
                         return false;
                     }
                 }
             }
         }
-        else
-        {
-            Debug.Log("No OverlapSphere collision detected");
-        }
-        
-        Debug.Log("After OverlapSphere, proceeding to resource check");
+
+        distanceHitList.Dispose();
 
         // 检查资源采集建筑的特殊条件
         if (isResourceBuilding)
         {
             bool hasVaildNearbyResourceNodes = false;
 
-            Debug.Log($"Checking for resources near position: {mouseWorldPosition}");
-
             // 使用传统的 Physics.OverlapSphere 来检测资源点 GameObject
             // 使用资源建筑的 buildingDistanceMin * 2 作为检测半径
             UnityEngine.Collider[] colliders = UnityEngine.Physics.OverlapSphere(mouseWorldPosition, buildingTypeSO.buildingDistanceMin * 2);
-            Debug.Log($"Found {colliders.Length} objects in radius");
 
             foreach (UnityEngine.Collider collider in colliders)
             {
-                Debug.Log($"Hit object: {collider.gameObject.name}");
-
                 // 检查是否有ResourceTypeSoHolderAuthoring组件
                 ResourceTypeSoHolderAuthoring resourceTypeSoHolder = collider.GetComponent<ResourceTypeSoHolderAuthoring>();
-                if (resourceTypeSoHolder != null)
+                if (resourceTypeSoHolder == null)
                 {
-                    Debug.Log($"Found resource with type: {resourceTypeSoHolder.resourceType}");
-
-                    // 根据建筑类型检查对应资源
-                    bool hasMatchingResource = false;
-                    switch (buildingTypeSO.buildingType)
-                    {
-                        case BuildingTypeSo.BuildingType.GoldHarvester:
-                            hasMatchingResource = resourceTypeSoHolder.resourceType == ResourceTypeSo.ResourceType.Gold;
-                            Debug.Log($"Checking for Gold resource: {hasMatchingResource}");
-                            break;
-                        case BuildingTypeSo.BuildingType.IronHarvester:
-                            hasMatchingResource = resourceTypeSoHolder.resourceType == ResourceTypeSo.ResourceType.Iron;
-                            Debug.Log($"Checking for Iron resource: {hasMatchingResource}");
-                            break;
-                        case BuildingTypeSo.BuildingType.OilHarvester:
-                            hasMatchingResource = resourceTypeSoHolder.resourceType == ResourceTypeSo.ResourceType.Oil;
-                            Debug.Log($"Checking for Oil resource: {hasMatchingResource}");
-                            break;
-                    }
-
-                    if (hasMatchingResource)
-                    {
-                        hasVaildNearbyResourceNodes = true;
-                        Debug.Log("Found matching resource!");
-                        break;
-                    }
+                    continue;
                 }
-                else
+
+                // 根据建筑类型检查对应资源
+                bool hasMatchingResource = false;
+                switch (buildingTypeSO.buildingType)
                 {
-                    Debug.Log("Hit object is not a resource");
+                    case BuildingTypeSo.BuildingType.GoldHarvester:
+                        hasMatchingResource = resourceTypeSoHolder.resourceType == ResourceTypeSo.ResourceType.Gold;
+                        break;
+                    case BuildingTypeSo.BuildingType.IronHarvester:
+                        hasMatchingResource = resourceTypeSoHolder.resourceType == ResourceTypeSo.ResourceType.Iron;
+                        break;
+                    case BuildingTypeSo.BuildingType.OilHarvester:
+                        hasMatchingResource = resourceTypeSoHolder.resourceType == ResourceTypeSo.ResourceType.Oil;
+                        break;
+                }
+
+                if (hasMatchingResource)
+                {
+                    hasVaildNearbyResourceNodes = true;
+                    break;
                 }
             }
 
             if (!hasVaildNearbyResourceNodes)
             {
-                Debug.Log("No matching resources found, cannot place building");
                 return false;
-            }
-            else
-            {
-                Debug.Log("Matching resources found, can place building");
             }
         }
 
