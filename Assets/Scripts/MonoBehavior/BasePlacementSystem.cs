@@ -170,13 +170,12 @@ public class BasePlacementSystem : MonoBehaviour
 
     public bool IsPlacementValid(Vector3 position)
     {
-        if (obstacleLayer.value != 0)
+        // obstacleLayer 未配置时退回「障碍/资源/建筑」层，否则基地可以放在障碍物或资源点上。
+        int mask = obstacleLayer.value != 0 ? obstacleLayer.value : GameAssets.BlockingMask;
+        Collider[] colliders = Physics.OverlapSphere(position, placementCheckRadius, mask);
+        if (colliders.Length > 0)
         {
-            Collider[] colliders = Physics.OverlapSphere(position, placementCheckRadius, obstacleLayer);
-            if (colliders.Length > 0)
-            {
-                return false;
-            }
+            return false;
         }
 
         if (MapManager.Instance != null)
@@ -185,6 +184,18 @@ public class BasePlacementSystem : MonoBehaviour
             if (!mapBounds.Contains(position))
             {
                 return false;
+            }
+
+            // 地图配置里的基地放置半径（相对地图中心），0 表示不限制。
+            float maxRadius = MapManager.Instance.GetBasePlacementRadius();
+            if (maxRadius > 0f)
+            {
+                float offsetX = position.x - mapBounds.center.x;
+                float offsetZ = position.z - mapBounds.center.z;
+                if (offsetX * offsetX + offsetZ * offsetZ > maxRadius * maxRadius)
+                {
+                    return false;
+                }
             }
         }
 

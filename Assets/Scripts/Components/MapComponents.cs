@@ -9,34 +9,17 @@ public struct MapConfigData : IComponentData
     public int seed;
     public float obstacleDensity;
     public int resourceCount;
+
+    /// <summary>刷怪点距 HQ 的期望距离（由 <see cref="MapConfig.spawnAreaRadius"/> 注入）。</summary>
+    public float spawnAreaRadius;
+
+    /// <summary>HQ 允许放置的距地图中心半径（由 <see cref="MapConfig.basePlacementRadius"/> 注入）。</summary>
     public float basePlacementRadius;
     public bool isGenerated;
     public bool needRecalculateCostMap;
     public bool isGenerating;
 }
 
-public struct MapSpawnRequest : IComponentData, IEnableableComponent
-{
-    public int seed;
-    public int mapWidth;
-    public int mapHeight;
-    public float obstacleDensity;
-    public int resourceCount;
-    public float basePlacementRadius;
-}
-
-public struct MapClearRequest : IComponentData, IEnableableComponent
-{
-}
-
-public struct MapGeneratedTag : IComponentData { }
-
 public struct ObstacleTag : IComponentData { }
 
 public struct ResourceNodeTag : IComponentData { }
-
-public struct MapPrefabsReferences : IComponentData
-{
-    public Entity obstaclePrefabEntity;
-    public Entity resourcePrefabEntity;
-}

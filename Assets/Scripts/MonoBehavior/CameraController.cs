@@ -7,11 +7,23 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float fieldOfViewMin;
     [SerializeField] private float fieldOfViewMax;
 
+    [Header("Map Bounds")]
+    [Tooltip("相机在水平方向离地图边缘的最小距离，避免镜头跑出可玩区域")]
+    [SerializeField] private float mapEdgeMargin = 5f;
+
     private float targetFieldOfView;
 
     private void Awake()
     {
-        targetFieldOfView = cinemachineCamera.Lens.FieldOfView;
+        if (cinemachineCamera == null)
+        {
+            cinemachineCamera = GetComponentInChildren<CinemachineCamera>();
+        }
+
+        if (cinemachineCamera != null)
+        {
+            targetFieldOfView = cinemachineCamera.Lens.FieldOfView;
+        }
     }
 
     private void Update()
@@ -43,6 +55,8 @@ public class CameraController : MonoBehaviour
         float moveSpeed = 30f;
         transform.position += moveDir * moveSpeed * Time.deltaTime;
 
+        ClampPositionToMapBounds();
+
 
         float rotationAmount = 0f;
         if (Input.GetKey(KeyCode.Q))
@@ -71,6 +85,29 @@ public class CameraController : MonoBehaviour
         targetFieldOfView = Mathf.Clamp(targetFieldOfView,fieldOfViewMin,fieldOfViewMax);
 
         float zoomSpeed = 10f;
-        cinemachineCamera.Lens.FieldOfView = Mathf.Lerp(cinemachineCamera.Lens.FieldOfView, targetFieldOfView, zoomSpeed*Time.deltaTime);
+        if (cinemachineCamera != null)
+        {
+            cinemachineCamera.Lens.FieldOfView = Mathf.Lerp(cinemachineCamera.Lens.FieldOfView, targetFieldOfView, zoomSpeed*Time.deltaTime);
+        }
+    }
+
+    /// <summary>相机水平位置钳制在地图边界内，避免镜头推到地图外只剩空背景。</summary>
+    private void ClampPositionToMapBounds()
+    {
+        if (MapManager.Instance == null) return;
+
+        Bounds bounds = MapManager.Instance.GetMapBounds();
+        Vector3 position = transform.position;
+
+        float minX = bounds.min.x + mapEdgeMargin;
+        float maxX = bounds.max.x - mapEdgeMargin;
+        float minZ = bounds.min.z + mapEdgeMargin;
+        float maxZ = bounds.max.z - mapEdgeMargin;
+
+        // 地图小于两倍 margin 时区间会反转，此时直接钉在中心。
+        position.x = minX <= maxX ? Mathf.Clamp(position.x, minX, maxX) : bounds.center.x;
+        position.z = minZ <= maxZ ? Mathf.Clamp(position.z, minZ, maxZ) : bounds.center.z;
+
+        transform.position = position;
     }
 }

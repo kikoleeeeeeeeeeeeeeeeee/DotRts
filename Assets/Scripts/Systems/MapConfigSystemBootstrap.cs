@@ -79,17 +79,12 @@ public partial struct MapConfigSystemBootstrap : ISystem
             seed = 0,
             obstacleDensity = config.obstacleDensity,
             resourceCount = config.resourceCount,
+            spawnAreaRadius = config.spawnAreaRadius,
             basePlacementRadius = config.basePlacementRadius,
             isGenerated = false,
             needRecalculateCostMap = false,
             isGenerating = false,
         });
-
-        state.EntityManager.AddComponent<MapSpawnRequest>(mapConfigEntity);
-        state.EntityManager.SetComponentEnabled<MapSpawnRequest>(mapConfigEntity, false);
-
-        state.EntityManager.AddComponent<MapClearRequest>(mapConfigEntity);
-        state.EntityManager.SetComponentEnabled<MapClearRequest>(mapConfigEntity, false);
 
         Debug.Log($"[MapConfigBootstrap] MapConfigData entity created: {config.mapWidth}x{config.mapHeight}");
 

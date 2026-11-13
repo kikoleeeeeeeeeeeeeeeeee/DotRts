@@ -349,13 +349,19 @@ public class MapManager : MonoBehaviour
             }
         }
 
-        Collider[] colliders = Physics.OverlapSphere(position, 1f, obstacleLayer);
+        Collider[] colliders = Physics.OverlapSphere(position, 1f, ResolveObstacleMask());
         if (colliders.Length > 0)
         {
             return false;
         }
 
         return true;
+    }
+
+    /// <summary>obstacleLayer 未在 Inspector 配置时退回「障碍/资源/建筑」层，避免重叠检测形同虚设。</summary>
+    private int ResolveObstacleMask()
+    {
+        return obstacleLayer.value != 0 ? obstacleLayer.value : GameAssets.BlockingMask;
     }
 
     public void ClearMap()
@@ -402,21 +408,30 @@ public class MapManager : MonoBehaviour
         Debug.Log("[MapManager] Map cleared");
     }
 
-    public Bounds GetMapBounds()
+    /// <summary>HQ 允许放置的距地图中心半径；0 表示不限制。</summary>
+    public float GetBasePlacementRadius()
     {
-        MapConfig config;
+        return ResolveMapConfig().basePlacementRadius;
+    }
+
+    private MapConfig ResolveMapConfig()
+    {
         if (mapConfigSo != null)
         {
-            config = mapConfigSo.mapConfig;
+            return mapConfigSo.mapConfig;
         }
-        else
+
+        MapConfig config = GetConfigFromECS();
+        if (config.mapWidth == 0)
         {
-            config = GetConfigFromECS();
-            if (config.mapWidth == 0)
-            {
-                config = new MapConfig { mapWidth = 200, mapHeight = 200 };
-            }
+            config = new MapConfig { mapWidth = 200, mapHeight = 200 };
         }
+        return config;
+    }
+
+    public Bounds GetMapBounds()
+    {
+        MapConfig config = ResolveMapConfig();
         return new Bounds(Vector3.zero, new Vector3(config.mapWidth, 10, config.mapHeight));
     }
 }
